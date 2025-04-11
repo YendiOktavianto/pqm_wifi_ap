@@ -21,23 +21,31 @@ class MainMenuPage extends StatelessWidget {
           children: [
             SizedBox(height: 40),
             // Waktu
-            Align(
-              alignment: Alignment.topLeft,
-              child: const DateTimeDisplay(),
-            ),
+            Align(alignment: Alignment.topLeft, child: const DateTimeDisplay()),
             SizedBox(height: 20),
 
             // Tombol Bluetooth
             ElevatedButton.icon(
               onPressed: () {},
-              icon: Icon(Icons.bluetooth, color: Colors.white),
+              icon: Container(
+                padding: const EdgeInsets.all(6),
+                decoration: const BoxDecoration(
+                  color: Colors.blue,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.bluetooth,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
               label: Text(
                 "Turn Bluetooth ON",
                 style: TextStyle(color: Colors.white),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.teal,
-                padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 6),
               ),
             ),
             SizedBox(height: 20),

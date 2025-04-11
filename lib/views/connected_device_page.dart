@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'device_list_page.dart';
 import 'measurement_page.dart';
+import '../widgets/date_time_display.dart';
 
 class ConnectedDevicePage extends StatelessWidget {
   const ConnectedDevicePage({super.key});
@@ -18,29 +19,12 @@ class ConnectedDevicePage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const SizedBox(height: 40),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      currentTime,
-                      style: const TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      currentDate,
-                      style: const TextStyle(fontSize: 16, color: Colors.white),
-                    ),
-                  ],
-                ),
-              ),
               const SizedBox(height: 30),
+              const Align(
+                alignment: Alignment.topLeft,
+                child: DateTimeDisplay(),
+              ),
+              const SizedBox(height: 20),
               Container(
                 padding: const EdgeInsets.symmetric(
                   vertical: 8,

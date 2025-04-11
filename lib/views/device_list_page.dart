@@ -30,9 +30,9 @@ class _DeviceListPageState extends State<DeviceListPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const SizedBox(height: 40),
+              const SizedBox(height: 20),
               Align(alignment: Alignment.topLeft, child: DateTimeDisplay()),
-              const SizedBox(height: 40),
+              const SizedBox(height: 20),
               Container(
                 padding: const EdgeInsets.symmetric(
                   vertical: 8,
@@ -61,18 +61,19 @@ class _DeviceListPageState extends State<DeviceListPage> {
                 child: ListView(
                   children: List.generate(
                     devices.length,
-                    (index) => GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          selectedIndex = index;
-                        });
-                      },
-                      child: deviceItem(
-                        devices[index]['type']!,
-                        devices[index]['serial']!,
-                        selectedIndex == index,
-                      ),
-                    ),
+                        (index) =>
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              selectedIndex = index;
+                            });
+                          },
+                          child: deviceItem(
+                            devices[index]['type']!,
+                            devices[index]['serial']!,
+                            selectedIndex == index,
+                          ),
+                        ),
                   ),
                 ),
               ),
