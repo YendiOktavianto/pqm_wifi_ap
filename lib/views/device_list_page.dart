@@ -39,12 +39,12 @@ class _DeviceListPageState extends State<DeviceListPage> {
                   horizontal: 16,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.grey[800],
+                  color: Colors.blueGrey[800],
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Text(
                   'Voltage & Ground Measurement',
-                  style: TextStyle(color: Colors.white70, fontSize: 14),
+                  style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
                 ),
               ),
               const SizedBox(height: 40),
@@ -61,19 +61,18 @@ class _DeviceListPageState extends State<DeviceListPage> {
                 child: ListView(
                   children: List.generate(
                     devices.length,
-                        (index) =>
-                        GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              selectedIndex = index;
-                            });
-                          },
-                          child: deviceItem(
-                            devices[index]['type']!,
-                            devices[index]['serial']!,
-                            selectedIndex == index,
-                          ),
-                        ),
+                    (index) => GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          selectedIndex = index;
+                        });
+                      },
+                      child: deviceItem(
+                        devices[index]['type']!,
+                        devices[index]['serial']!,
+                        selectedIndex == index,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -147,32 +146,41 @@ class _DeviceListPageState extends State<DeviceListPage> {
   }
 
   Widget deviceItem(String type, String serial, bool selected) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-      decoration: BoxDecoration(
-        border: selected ? Border.all(color: Colors.blue, width: 1.5) : null,
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          const Text(
-            'POWER QUALITY METER',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1,
-            ),
+    return Align(
+      alignment: Alignment.center,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(
+          maxWidth: 250,
+        ),
+        child: Container(
+          margin: const EdgeInsets.symmetric(vertical: 8),
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+          decoration: BoxDecoration(
+            border:
+                selected ? Border.all(color: Colors.blue, width: 1.5) : null,
+            borderRadius: BorderRadius.circular(6),
           ),
-          const SizedBox(height: 4),
-          Text(
-            'TYPE: $type\nSERIAL: $serial',
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.white70, fontSize: 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const Text(
+                'POWER QUALITY METER',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'TYPE: $type\nSERIAL: $serial',
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Colors.white70, fontSize: 12),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
