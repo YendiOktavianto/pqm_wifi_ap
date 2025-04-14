@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'main_menu_page.dart';
+import '../widgets/exit_app_button.dart';
 
 class SecondWelcomePage extends StatelessWidget {
   @override
@@ -90,7 +91,7 @@ class SecondWelcomePage extends StatelessWidget {
                 onPressed: () {
                   // Logika mengaktifkan Bluetooth
                 },
-                icon: Icon(Icons.bluetooth, color: Colors.white,),
+                icon: Icon(Icons.bluetooth, color: Colors.white),
                 label: Text(
                   "Turn Bluetooth ON",
                   style: TextStyle(color: Colors.white),
@@ -119,17 +120,7 @@ class SecondWelcomePage extends StatelessWidget {
             ],
           ),
           SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.exit_to_app, color: Colors.white),
-              SizedBox(width: 8),
-              Text(
-                "Exit App",
-                style: TextStyle(color: Colors.white, fontSize: 14),
-              ),
-            ],
-          ),
+          const ExitAppButton(),
         ],
       ),
     );
