@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'connected_device_page.dart';
 import 'recording_page.dart';
 import '../widgets/date_time_display.dart';
+import '../widgets/device_info_column.dart';
 
 class MeasurementPage extends StatefulWidget {
   const MeasurementPage({super.key});
@@ -25,37 +26,7 @@ class _MeasurementPageState extends State<MeasurementPage> {
             SizedBox(height: 40),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(height: 10),
-                    Text(
-                      '15:40',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      'Wed, February 21',
-                      style: TextStyle(color: Colors.white70, fontSize: 14),
-                    ),
-                  ],
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    const Icon(Icons.wifi, color: Colors.white, size: 40),
-                    const Text(
-                      'Connected Device:\nPQM-500Wi SN#123456',
-                      style: TextStyle(color: Colors.yellow, fontSize: 12),
-                      textAlign: TextAlign.right,
-                    ),
-                  ],
-                ),
-              ],
+              children: [DateTimeDisplay(), DeviceInfoColumn()],
             ),
             const SizedBox(height: 10),
             Row(
