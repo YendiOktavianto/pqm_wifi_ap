@@ -6,6 +6,7 @@ import 'open_search_file_page.dart';
 import 'rename_file_page.dart';
 import 'export_search_file_page.dart';
 import '../widgets/date_time_display.dart';
+import '../widgets/exit_app_button.dart';
 
 class MainMenuPage extends StatelessWidget {
   const MainMenuPage({super.key});
@@ -102,18 +103,7 @@ class MainMenuPage extends StatelessWidget {
             ),
             SizedBox(height: 20),
 
-            // Exit App
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.exit_to_app, color: Colors.white),
-                SizedBox(width: 8),
-                Text(
-                  "Exit App",
-                  style: TextStyle(color: Colors.white, fontSize: 14),
-                ),
-              ],
-            ),
+            Center(child: const ExitAppButton()),
           ],
         ),
       ),

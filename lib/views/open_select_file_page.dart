@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'open_search_file_page.dart';
+import '../widgets/exit_app_button.dart';
 
 class OpenSelectFilePage extends StatelessWidget {
   const OpenSelectFilePage({super.key});
@@ -35,7 +36,7 @@ class OpenSelectFilePage extends StatelessWidget {
                         onPressed: () {},
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.teal,
-                          foregroundColor: Colors.white
+                          foregroundColor: Colors.white,
                         ),
                         child: const Text('Open File'),
                       ),
@@ -123,14 +124,8 @@ class OpenSelectFilePage extends StatelessWidget {
               ),
               const SizedBox(height: 20),
               Center(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Icon(Icons.exit_to_app, color: Colors.white),
-                    SizedBox(width: 8),
-                    Text('Exit App', style: TextStyle(color: Colors.white)),
-                  ],
-                ),
+                child: // Exit App
+                    const ExitAppButton(),
               ),
             ],
           ),

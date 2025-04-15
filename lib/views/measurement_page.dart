@@ -3,6 +3,7 @@ import 'connected_device_page.dart';
 import 'recording_page.dart';
 import '../widgets/date_time_display.dart';
 import '../widgets/device_info_column.dart';
+import '../widgets/exit_app_button.dart';
 
 class MeasurementPage extends StatefulWidget {
   const MeasurementPage({super.key});
@@ -161,14 +162,7 @@ class _MeasurementPageState extends State<MeasurementPage> {
               ],
             ),
             const SizedBox(height: 20),
-            TextButton.icon(
-              onPressed: () {},
-              icon: const Icon(Icons.exit_to_app, color: Colors.white),
-              label: const Text(
-                'Exit App',
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
+            const ExitAppButton(),
           ],
         ),
       ),

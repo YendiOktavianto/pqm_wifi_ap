@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'main_menu_page.dart';
 import 'export_select_file_page.dart';
+import '../widgets/exit_app_button.dart';
 
 class ExportSearchFilePage extends StatelessWidget {
   const ExportSearchFilePage({super.key});
@@ -180,16 +181,7 @@ class ExportSearchFilePage extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   Center(
-                    child: TextButton.icon(
-                      onPressed: () {
-                        SystemNavigator.pop();
-                      },
-                      icon: const Icon(Icons.exit_to_app, color: Colors.white),
-                      label: const Text(
-                        'Exit App',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
+                    child: const ExitAppButton()
                   ),
                 ],
               ),

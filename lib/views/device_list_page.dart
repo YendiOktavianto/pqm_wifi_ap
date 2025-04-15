@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'main_menu_page.dart';
 import 'connected_device_page.dart';
 import '../widgets/date_time_display.dart';
+import '../widgets/exit_app_button.dart';
 
 class DeviceListPage extends StatefulWidget {
   const DeviceListPage({super.key});
@@ -44,7 +45,11 @@ class _DeviceListPageState extends State<DeviceListPage> {
                 ),
                 child: const Text(
                   'Voltage & Ground Measurement',
-                  style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
               const SizedBox(height: 40),
@@ -127,17 +132,7 @@ class _DeviceListPageState extends State<DeviceListPage> {
               ),
               const SizedBox(height: 10),
               // Exit App
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.exit_to_app, color: Colors.white),
-                  SizedBox(width: 8),
-                  Text(
-                    "Exit App",
-                    style: TextStyle(color: Colors.white, fontSize: 14),
-                  ),
-                ],
-              ),
+              const ExitAppButton(),
             ],
           ),
         ),
@@ -149,9 +144,7 @@ class _DeviceListPageState extends State<DeviceListPage> {
     return Align(
       alignment: Alignment.center,
       child: ConstrainedBox(
-        constraints: const BoxConstraints(
-          maxWidth: 250,
-        ),
+        constraints: const BoxConstraints(maxWidth: 250),
         child: Container(
           margin: const EdgeInsets.symmetric(vertical: 8),
           padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),

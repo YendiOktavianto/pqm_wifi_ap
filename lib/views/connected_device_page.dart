@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'device_list_page.dart';
 import 'measurement_page.dart';
 import '../widgets/date_time_display.dart';
+import '../widgets/exit_app_button.dart';
 
 class ConnectedDevicePage extends StatelessWidget {
   const ConnectedDevicePage({super.key});
@@ -130,15 +131,7 @@ class ConnectedDevicePage extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 20),
-              TextButton.icon(
-                style: TextButton.styleFrom(foregroundColor: Colors.white),
-                onPressed: () {},
-                icon: const Icon(Icons.exit_to_app, color: Colors.white),
-                label: const Text(
-                  'Exit App',
-                  style: TextStyle(color: Colors.white, fontSize: 14),
-                ),
-              ),
+              const ExitAppButton(),
               const SizedBox(height: 20),
             ],
           ),

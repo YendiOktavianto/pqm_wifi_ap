@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'main_menu_page.dart';
 import 'open_select_file_page.dart';
+import '../widgets/exit_app_button.dart';
 
 class OpenSearchFilePage extends StatelessWidget {
   const OpenSearchFilePage({super.key});
@@ -203,17 +204,7 @@ class OpenSearchFilePage extends StatelessWidget {
                 ],
               ),
               SizedBox(height: 20),
-              GestureDetector(
-                onTap: () {},
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.exit_to_app, color: Colors.white),
-                    SizedBox(width: 8),
-                    Text('Exit App', style: TextStyle(color: Colors.white)),
-                  ],
-                ),
-              ),
+              GestureDetector(onTap: () {}, child: const ExitAppButton()),
             ],
           ),
         ),

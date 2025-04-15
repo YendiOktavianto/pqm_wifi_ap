@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pqm_app/views/main_menu_page.dart';
+import '../widgets/exit_app_button.dart';
 
 class RenameFilePage extends StatelessWidget {
   const RenameFilePage({super.key});
@@ -148,16 +149,7 @@ class RenameFilePage extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 30),
-              Center(
-                child: TextButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(Icons.exit_to_app, color: Colors.white),
-                  label: const Text(
-                    'Exit App',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-              ),
+              Center(child: const ExitAppButton()),
             ],
           ),
         ),

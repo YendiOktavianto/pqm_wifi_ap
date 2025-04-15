@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'export_search_file_page.dart';
+import '../widgets/exit_app_button.dart';
 
 class ExportSelectFilePage extends StatefulWidget {
   const ExportSelectFilePage({super.key});
@@ -164,6 +165,7 @@ class _ExportSelectFilePageState extends State<ExportSelectFilePage> {
                 ],
               ),
             ),
+            Center(child: const ExitAppButton()),
           ],
         ),
       ),

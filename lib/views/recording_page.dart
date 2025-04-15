@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'measurement_page.dart';
 import '../widgets/date_time_display.dart';
 import '../widgets/device_info_column.dart';
+import '../widgets/exit_app_button.dart';
 
 class RecordingPage extends StatefulWidget {
   const RecordingPage({super.key});
@@ -212,14 +213,7 @@ class _RecordingPageState extends State<RecordingPage> {
             ),
             // const Spacer(),
             const SizedBox(height: 20),
-            TextButton.icon(
-              onPressed: () {},
-              icon: const Icon(Icons.exit_to_app, color: Colors.white),
-              label: const Text(
-                "Exit App",
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
+            const ExitAppButton(),
           ],
         ),
       ),
