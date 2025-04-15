@@ -51,7 +51,7 @@ class _ExportSelectFilePageState extends State<ExportSelectFilePage> {
                 ),
               ],
             ),
-            SizedBox.fromSize(),
+            const SizedBox(height: 20),
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
               child: Text(

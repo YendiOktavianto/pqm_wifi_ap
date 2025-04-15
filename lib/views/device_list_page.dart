@@ -3,6 +3,7 @@ import 'main_menu_page.dart';
 import 'connected_device_page.dart';
 import '../widgets/date_time_display.dart';
 import '../widgets/exit_app_button.dart';
+import '../widgets/measurement_label.dart';
 
 class DeviceListPage extends StatefulWidget {
   const DeviceListPage({super.key});
@@ -34,24 +35,7 @@ class _DeviceListPageState extends State<DeviceListPage> {
               const SizedBox(height: 20),
               Align(alignment: Alignment.topLeft, child: DateTimeDisplay()),
               const SizedBox(height: 20),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 8,
-                  horizontal: 16,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.blueGrey[800],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Text(
-                  'Voltage & Ground Measurement',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
+              const MeasurementLabel(),
               const SizedBox(height: 40),
               const Text(
                 'LISTED DEVICE:',

@@ -3,6 +3,7 @@ import 'connected_device_page.dart';
 import 'recording_page.dart';
 import '../widgets/date_time_display.dart';
 import '../widgets/device_info_column.dart';
+import '../widgets/measurement_label.dart';
 import '../widgets/exit_app_button.dart';
 
 class MeasurementPage extends StatefulWidget {

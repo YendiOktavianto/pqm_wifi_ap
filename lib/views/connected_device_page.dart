@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'device_list_page.dart';
 import 'measurement_page.dart';
 import '../widgets/date_time_display.dart';
+import '../widgets/measurement_label.dart';
 import '../widgets/exit_app_button.dart';
 
 class ConnectedDevicePage extends StatelessWidget {
@@ -26,24 +27,7 @@ class ConnectedDevicePage extends StatelessWidget {
                 child: DateTimeDisplay(),
               ),
               const SizedBox(height: 20),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 8,
-                  horizontal: 16,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.blueGrey[800],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Text(
-                  'Voltage & Ground Measurement',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
+              const MeasurementLabel(),
               const Spacer(),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
