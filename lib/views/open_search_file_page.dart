@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'main_menu_page.dart';
 import 'open_select_file_page.dart';
+import '../widgets/date_time_display.dart';
+import '../widgets/device_info_column.dart';
 import '../widgets/exit_app_button.dart';
 
 class OpenSearchFilePage extends StatelessWidget {
@@ -19,49 +21,7 @@ class OpenSearchFilePage extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '15:40',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        'Wed, February 21',
-                        style: TextStyle(color: Colors.white, fontSize: 14),
-                      ),
-                    ],
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Icon(Icons.wifi, size: 36, color: Colors.white),
-                      Text(
-                        'Connected Device:',
-                        style: TextStyle(color: Colors.white, fontSize: 12),
-                      ),
-                      Text(
-                        'PQM-500Wi SN#',
-                        style: TextStyle(
-                          color: Colors.amber[600],
-                          fontSize: 12,
-                        ),
-                      ),
-                      Text(
-                        '123456',
-                        style: TextStyle(
-                          color: Colors.amber[600],
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                children: [DateTimeDisplay(), DeviceInfoColumn()],
               ),
               SizedBox(height: 30),
               Row(

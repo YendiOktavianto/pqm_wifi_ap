@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pqm_app/views/main_menu_page.dart';
+import '../widgets/date_time_display.dart';
+import '../widgets/device_info_column.dart';
 import '../widgets/exit_app_button.dart';
 
 class RenameFilePage extends StatelessWidget {
@@ -17,41 +19,7 @@ class RenameFilePage extends StatelessWidget {
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text(
-                        '15:40',
-                        style: TextStyle(fontSize: 40, color: Colors.white),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        'Wed, February 21',
-                        style: TextStyle(fontSize: 16, color: Colors.white),
-                      ),
-                    ],
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: const [
-                      Icon(Icons.wifi, color: Colors.white, size: 36),
-                      SizedBox(height: 4),
-                      Text(
-                        'Connected Device:',
-                        style: TextStyle(color: Colors.white, fontSize: 12),
-                      ),
-                      Text(
-                        'PQM-500Wi SN#',
-                        style: TextStyle(color: Colors.yellow, fontSize: 12),
-                      ),
-                      Text(
-                        '123456',
-                        style: TextStyle(color: Colors.yellow, fontSize: 12),
-                      ),
-                    ],
-                  ),
-                ],
+                children: [DateTimeDisplay(), DeviceInfoColumn()],
               ),
               const SizedBox(height: 20),
               Row(

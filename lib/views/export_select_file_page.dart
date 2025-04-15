@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'export_search_file_page.dart';
+import '../widgets/date_time_display.dart';
+import '../widgets/device_info_column.dart';
 import '../widgets/exit_app_button.dart';
 
 class ExportSelectFilePage extends StatefulWidget {
@@ -24,58 +26,32 @@ class _ExportSelectFilePageState extends State<ExportSelectFilePage> {
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "15:40",
-                        style: TextStyle(color: Colors.white, fontSize: 30),
-                      ),
-                      const Text(
-                        "Wed, February 21",
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      const SizedBox(height: 30),
-                      ElevatedButton(
-                        onPressed: () {},
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.grey,
-                          foregroundColor: Colors.white,
-                        ),
-                        child: const Text("Export File"),
-                      ),
-                    ],
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Icon(Icons.wifi, color: Colors.white, size: 40),
-                      const Text(
-                        "Connected Device:",
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      const Text(
-                        "PQM-500wi SN#",
-                        style: TextStyle(color: Colors.amber),
-                      ),
-                      const Text(
-                        "123456",
-                        style: TextStyle(color: Colors.amber),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {},
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.teal,
-                          foregroundColor: Colors.white,
-                        ),
-                        child: const Text("Disconnect"),
-                      ),
-                    ],
-                  ),
-                ],
+                children: [DateTimeDisplay(), DeviceInfoColumn()],
               ),
             ),
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blueGrey,
+                    foregroundColor: Colors.white,
+                  ),
+                  onPressed: () {},
+                  child: const Text('Export File'),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.teal,
+                    foregroundColor: Colors.white,
+                  ),
+                  onPressed: () {},
+                  child: const Text('Disconnect'),
+                ),
+              ],
+            ),
+            SizedBox.fromSize(),
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
               child: Text(

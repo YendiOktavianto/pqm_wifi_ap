@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'open_search_file_page.dart';
+import '../widgets/date_time_display.dart';
+import '../widgets/device_info_column.dart';
 import '../widgets/exit_app_button.dart';
 
 class OpenSelectFilePage extends StatelessWidget {
@@ -18,57 +20,27 @@ class OpenSelectFilePage extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.start,
+                children: [DateTimeDisplay(), DeviceInfoColumn()],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        '15:40',
-                        style: TextStyle(color: Colors.white, fontSize: 32),
-                      ),
-                      const SizedBox(height: 4),
-                      const Text(
-                        'Wed, February 21',
-                        style: TextStyle(color: Colors.white70),
-                      ),
-                      const SizedBox(height: 45),
-                      ElevatedButton(
-                        onPressed: () {},
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.teal,
-                          foregroundColor: Colors.white,
-                        ),
-                        child: const Text('Open File'),
-                      ),
-                    ],
+                  ElevatedButton(
+                    onPressed: () {},
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.teal,
+                      foregroundColor: Colors.white,
+                    ),
+                    child: const Text('Open File'),
                   ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      const Icon(Icons.wifi, color: Colors.white, size: 40),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Connected Device:',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      const Text(
-                        'PQM-500wl SN#',
-                        style: TextStyle(color: Colors.amber),
-                      ),
-                      const Text(
-                        '123456',
-                        style: TextStyle(color: Colors.amber),
-                      ),
-                      const SizedBox(height: 10),
-                      ElevatedButton(
-                        onPressed: () {},
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.teal,
-                          foregroundColor: Colors.white,
-                        ),
-                        child: const Text('Disconnect'),
-                      ),
-                    ],
+                  ElevatedButton(
+                    onPressed: () {},
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.teal,
+                      foregroundColor: Colors.white,
+                    ),
+                    child: const Text('Disconnect'),
                   ),
                 ],
               ),

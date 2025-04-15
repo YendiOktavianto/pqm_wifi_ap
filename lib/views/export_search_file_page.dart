@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'main_menu_page.dart';
 import 'export_select_file_page.dart';
+import '../widgets/date_time_display.dart';
+import '../widgets/device_info_column.dart';
 import '../widgets/exit_app_button.dart';
 
 class ExportSearchFilePage extends StatelessWidget {
@@ -32,69 +34,27 @@ class ExportSearchFilePage extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [DateTimeDisplay(), DeviceInfoColumn()],
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            '15:40',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 30,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const Text(
-                            'Wed, February 21',
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 12,
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blueGrey,
-                              foregroundColor: Colors.white,
-                            ),
-                            onPressed: () {},
-                            child: const Text('Export File'),
-                          ),
-                        ],
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blueGrey,
+                          foregroundColor: Colors.white,
+                        ),
+                        onPressed: () {},
+                        child: const Text('Export File'),
                       ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          const Icon(Icons.wifi, color: Colors.white, size: 30),
-                          const SizedBox(height: 5),
-                          const Text(
-                            'Connected Device:',
-                            style: TextStyle(color: Colors.white, fontSize: 10),
-                          ),
-                          const Text(
-                            'PQM-500Wi SN#',
-                            style: TextStyle(
-                              color: Colors.yellow,
-                              fontSize: 10,
-                            ),
-                          ),
-                          const Text(
-                            '123456',
-                            style: TextStyle(
-                              color: Colors.yellow,
-                              fontSize: 10,
-                            ),
-                          ),
-                          const SizedBox(height: 5),
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.teal,
-                              foregroundColor: Colors.white,
-                            ),
-                            onPressed: () {},
-                            child: const Text('Disconnect'),
-                          ),
-                        ],
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.teal,
+                          foregroundColor: Colors.white,
+                        ),
+                        onPressed: () {},
+                        child: const Text('Disconnect'),
                       ),
                     ],
                   ),
@@ -180,9 +140,7 @@ class ExportSearchFilePage extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 10),
-                  Center(
-                    child: const ExitAppButton()
-                  ),
+                  Center(child: const ExitAppButton()),
                 ],
               ),
             ),
