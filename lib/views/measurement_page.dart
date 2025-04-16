@@ -3,7 +3,7 @@ import 'connected_device_page.dart';
 import 'recording_page.dart';
 import '../widgets/date_time_display.dart';
 import '../widgets/device_info_column.dart';
-import '../widgets/measurement_label.dart';
+import '../widgets/measurement_display.dart';
 import '../widgets/exit_app_button.dart';
 
 class MeasurementPage extends StatefulWidget {
@@ -53,31 +53,12 @@ class _MeasurementPageState extends State<MeasurementPage> {
               ],
             ),
             const SizedBox(height: 20),
-            measurementCard(
-              'Ground Measurement (V)',
-              '010.5',
-              'Fail',
-              Colors.red,
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: measurementCard(
-                    'Voltage (V)',
-                    '220',
-                    '',
-                    Colors.green,
-                  ),
-                ),
-                Expanded(
-                  child: measurementCard(
-                    'Frequency (Hz)',
-                    '50',
-                    '',
-                    Colors.green,
-                  ),
-                ),
-              ],
+            MeasurementDisplay(
+              groundValue: '010.5',
+              groundStatus: 'Fail',
+              groundStatusColor: Colors.red,
+              voltageValue: '220',
+              frequencyValue: '50',
             ),
             const SizedBox(height: 20),
             const Text(

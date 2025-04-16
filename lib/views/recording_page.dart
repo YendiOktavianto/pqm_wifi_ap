@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'measurement_page.dart';
 import '../widgets/date_time_display.dart';
 import '../widgets/device_info_column.dart';
+import '../widgets/measurement_display.dart';
 import '../widgets/exit_app_button.dart';
 
 class RecordingPage extends StatefulWidget {
@@ -52,92 +53,12 @@ class _RecordingPageState extends State<RecordingPage> {
               ],
             ),
             const SizedBox(height: 30),
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.grey[850],
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        "Ground Measurement (V)",
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.redAccent,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: const Text(
-                          "Fail",
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  const Center(
-                    child: Text(
-                      "010.5",
-                      style: TextStyle(
-                        fontSize: 50,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.red,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[850],
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Column(
-                      children: [
-                        Text(
-                          "220",
-                          style: TextStyle(fontSize: 40, color: Colors.green),
-                        ),
-                        Text("Volt", style: TextStyle(color: Colors.white54)),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.all(15),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[850],
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Column(
-                      children: [
-                        Text(
-                          "50",
-                          style: TextStyle(fontSize: 40, color: Colors.green),
-                        ),
-                        Text("Hz", style: TextStyle(color: Colors.white54)),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+            MeasurementDisplay(
+              groundValue: '010.5',
+              groundStatus: 'Fail',
+              groundStatusColor: Colors.red,
+              voltageValue: '220',
+              frequencyValue: '50',
             ),
             const SizedBox(height: 20),
             const Text(
