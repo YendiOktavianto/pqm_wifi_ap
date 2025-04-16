@@ -4,6 +4,7 @@ import 'recording_page.dart';
 import '../widgets/date_time_display.dart';
 import '../widgets/device_info_column.dart';
 import '../widgets/measurement_display.dart';
+import '../widgets/record_button.dart';
 import '../widgets/exit_app_button.dart';
 
 class MeasurementPage extends StatefulWidget {
@@ -61,62 +62,8 @@ class _MeasurementPageState extends State<MeasurementPage> {
               frequencyValue: '50',
             ),
             const SizedBox(height: 20),
-            const Text(
-              'Do You Want Recording Data?',
-              style: TextStyle(color: Colors.white, fontSize: 16),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: ListTile(
-                    title: const Text(
-                      'NO',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    leading: Radio<bool>(
-                      value: false,
-                      groupValue: isRecording,
-                      onChanged:
-                          (bool? value) => setState(() => isRecording = value!),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: ListTile(
-                    title: const Text(
-                      'YES',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    leading: Radio<bool>(
-                      value: true,
-                      groupValue: isRecording,
-                      onChanged:
-                          (bool? value) => setState(() => isRecording = value!),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    decoration: InputDecoration(
-                      hintText: 'Enter duration here',
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                const Text("Minute(s)", style: TextStyle(color: Colors.white)),
-              ],
-            ),
-            const SizedBox(height: 20),
+            RecordButton(),
+            SizedBox(height: MediaQuery.of(context).size.height * 0.15),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
@@ -150,64 +97,6 @@ class _MeasurementPageState extends State<MeasurementPage> {
       ),
     );
   }
-
-  Widget measurementCard(
-    String title,
-    String value,
-    String status,
-    Color statusColor,
-  ) {
-    return Card(
-      color: Colors.grey[850],
-      elevation: 5,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(title, style: const TextStyle(color: Colors.white)),
-                if (status.isNotEmpty)
-                  Container(
-                    decoration: BoxDecoration(
-                      color: statusColor,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 2,
-                      horizontal: 8,
-                    ),
-                    child: Text(
-                      status,
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Text(
-              value,
-              style: TextStyle(
-                color: statusColor,
-                fontSize: 48,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget radioOption(String label, bool selected) => Row(
-    mainAxisAlignment: MainAxisAlignment.center,
-    children: [
-      Radio(value: selected, groupValue: true, onChanged: (_) {}),
-      Text(label, style: const TextStyle(color: Colors.white)),
-    ],
-  );
 
   Widget actionButton(
     BuildContext context,

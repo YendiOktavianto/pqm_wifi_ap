@@ -20,6 +20,7 @@ class MeasurementDisplay extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
+        // Ground Measurement
         Card(
           color: Colors.grey[850],
           elevation: 5,
@@ -28,6 +29,7 @@ class MeasurementDisplay extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Label + Status
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -52,12 +54,13 @@ class MeasurementDisplay extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 10),
+                // Value
                 Text(
                   groundValue,
                   style: TextStyle(
+                    color: groundStatusColor,
                     fontSize: 48,
                     fontWeight: FontWeight.bold,
-                    color: groundStatusColor,
                   ),
                 ),
               ],
@@ -65,12 +68,22 @@ class MeasurementDisplay extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
+
+        // Voltage & Frequency Row
         Row(
           children: [
-            Expanded(child: _smallMeasurementCard('Voltage (V)', voltageValue)),
+            Expanded(
+              child: _smallMeasurementCard(
+                label: 'Voltage (V)',
+                value: voltageValue,
+              ),
+            ),
             const SizedBox(width: 12),
             Expanded(
-              child: _smallMeasurementCard('Frequency (Hz)', frequencyValue),
+              child: _smallMeasurementCard(
+                label: 'Frequency (Hz)',
+                value: frequencyValue,
+              ),
             ),
           ],
         ),
@@ -78,7 +91,7 @@ class MeasurementDisplay extends StatelessWidget {
     );
   }
 
-  Widget _smallMeasurementCard(String label, String value) {
+  Widget _smallMeasurementCard({required String label, required String value}) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -86,12 +99,23 @@ class MeasurementDisplay extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            value,
-            style: const TextStyle(fontSize: 40, color: Colors.green),
+            label,
+            style: const TextStyle(color: Colors.white, fontSize: 14),
           ),
-          Text(label, style: const TextStyle(color: Colors.white54)),
+          const SizedBox(height: 8),
+          Center(
+            child: Text(
+              value,
+              style: const TextStyle(
+                fontSize: 48,
+                fontWeight: FontWeight.bold,
+                color: Colors.green,
+              ),
+            ),
+          ),
         ],
       ),
     );
