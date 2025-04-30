@@ -55,12 +55,14 @@ class MeasurementDisplay extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 // Value
-                Text(
-                  groundValue,
-                  style: TextStyle(
-                    color: groundStatusColor,
-                    fontSize: 48,
-                    fontWeight: FontWeight.bold,
+                Center(
+                  child: Text(
+                    groundValue,
+                    style: TextStyle(
+                      color: groundStatusColor,
+                      fontSize: 48,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],

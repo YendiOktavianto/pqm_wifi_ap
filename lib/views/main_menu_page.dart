@@ -35,13 +35,13 @@ class MainMenuPage extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
-                  Icons.bluetooth,
+                  Icons.wifi,
                   color: Colors.white,
                   size: 20,
                 ),
               ),
               label: Text(
-                "Turn Bluetooth ON",
+                "Turn WIFI ON",
                 style: TextStyle(color: Colors.white),
               ),
               style: ElevatedButton.styleFrom(

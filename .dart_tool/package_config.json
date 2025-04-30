@@ -2,6 +2,18 @@
   "configVersion": 2,
   "packages": [
     {
+      "name": "android_intent_plus",
+      "rootUri": "file:///C:/Users/AsusPC/AppData/Local/Pub/Cache/hosted/pub.dev/android_intent_plus-3.1.9",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "app_settings",
+      "rootUri": "file:///C:/Users/AsusPC/AppData/Local/Pub/Cache/hosted/pub.dev/app_settings-5.2.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.18"
+    },
+    {
       "name": "async",
       "rootUri": "file:///C:/Users/AsusPC/AppData/Local/Pub/Cache/hosted/pub.dev/async-2.12.0",
       "packageUri": "lib/",
@@ -57,9 +69,15 @@
     },
     {
       "name": "flutter",
-      "rootUri": "file:///D:/FLUTTER/flutter/packages/flutter",
+      "rootUri": "file:///C:/dev/flutter/packages/flutter",
       "packageUri": "lib/",
       "languageVersion": "3.7"
+    },
+    {
+      "name": "flutter_bluetooth_serial",
+      "rootUri": "file:///C:/Users/AsusPC/AppData/Local/Pub/Cache/hosted/pub.dev/flutter_bluetooth_serial-0.4.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
     },
     {
       "name": "flutter_lints",
@@ -69,7 +87,7 @@
     },
     {
       "name": "flutter_test",
-      "rootUri": "file:///D:/FLUTTER/flutter/packages/flutter_test",
+      "rootUri": "file:///C:/dev/flutter/packages/flutter_test",
       "packageUri": "lib/",
       "languageVersion": "3.7"
     },
@@ -140,6 +158,12 @@
       "languageVersion": "2.12"
     },
     {
+      "name": "nested",
+      "rootUri": "file:///C:/Users/AsusPC/AppData/Local/Pub/Cache/hosted/pub.dev/nested-1.0.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
       "name": "path",
       "rootUri": "file:///C:/Users/AsusPC/AppData/Local/Pub/Cache/hosted/pub.dev/path-1.9.1",
       "packageUri": "lib/",
@@ -194,8 +218,14 @@
       "languageVersion": "3.0"
     },
     {
+      "name": "provider",
+      "rootUri": "file:///C:/Users/AsusPC/AppData/Local/Pub/Cache/hosted/pub.dev/provider-6.1.4",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
       "name": "sky_engine",
-      "rootUri": "file:///D:/FLUTTER/flutter/bin/cache/pkg/sky_engine",
+      "rootUri": "file:///C:/dev/flutter/bin/cache/pkg/sky_engine",
       "packageUri": "lib/",
       "languageVersion": "3.7"
     },
@@ -260,6 +290,12 @@
       "languageVersion": "3.4"
     },
     {
+      "name": "wifi_iot",
+      "rootUri": "file:///C:/Users/AsusPC/AppData/Local/Pub/Cache/hosted/pub.dev/wifi_iot-0.3.19+2",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
       "name": "xdg_directories",
       "rootUri": "file:///C:/Users/AsusPC/AppData/Local/Pub/Cache/hosted/pub.dev/xdg_directories-1.1.0",
       "packageUri": "lib/",
@@ -272,10 +308,10 @@
       "languageVersion": "3.7"
     }
   ],
-  "generated": "2025-04-11T09:00:54.444357Z",
+  "generated": "2025-04-30T08:45:23.032848Z",
   "generator": "pub",
   "generatorVersion": "3.7.0",
-  "flutterRoot": "file:///D:/FLUTTER/flutter",
+  "flutterRoot": "file:///C:/dev/flutter",
   "flutterVersion": "3.29.0",
   "pubCache": "file:///C:/Users/AsusPC/AppData/Local/Pub/Cache"
 }

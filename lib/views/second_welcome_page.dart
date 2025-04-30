@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'main_menu_page.dart';
 import '../widgets/exit_app_button.dart';
+import '../services/wifi_service.dart';
 
 class SecondWelcomePage extends StatelessWidget {
   @override
@@ -84,27 +86,35 @@ class SecondWelcomePage extends StatelessWidget {
 
           Spacer(),
 
-          // Tombol untuk mengaktifkan Bluetooth dan masuk ke menu utama
           Column(
             children: [
               ElevatedButton.icon(
                 onPressed: () {
-                  // Logika mengaktifkan Bluetooth
+                  context.read<WifiService>().toggleWifi();
                 },
-                icon: Icon(Icons.bluetooth, color: Colors.white),
-                label: Text(
-                  "Turn Bluetooth ON",
-                  style: TextStyle(color: Colors.white),
+                icon: const Icon(Icons.wifi, color: Colors.white),
+                label: Consumer<WifiService>(
+                  builder: (context, wifiService, child) {
+                    return Text(
+                      wifiService.isWifiOn ? "Turn WIFI OFF" : "Turn WIFI ON",
+                      style: TextStyle(color: Colors.white),
+                    );
+                  },
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                  backgroundColor:
+                      context.watch<WifiService>().isWifiOn
+                          ? Colors.red
+                          : Colors.blue,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 15,
+                  ),
                 ),
               ),
               SizedBox(height: 10),
               ElevatedButton(
                 onPressed: () {
-                  // Navigasi ke Main Menu Page
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(builder: (context) => MainMenuPage()),

@@ -11,7 +11,6 @@ class _WelcomePageState extends State<WelcomePage> {
   @override
   void initState() {
     super.initState();
-    // Delay selama 10 detik, lalu pindah ke Main Menu
     Future.delayed(Duration(seconds: 5), () {
       Navigator.pushReplacement(
         context,
@@ -23,39 +22,37 @@ class _WelcomePageState extends State<WelcomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black, // Background sesuai gambar
+      backgroundColor: Colors.black,
       body: Column(
         children: [
-          Spacer(flex: 1), // Memberi ruang lebih di atas agar teks PQM turun
+          Spacer(flex: 1),
 
-          // Bagian utama
           Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Teks PQM
                 Text(
                   'PQM',
                   style: TextStyle(
-                    fontSize: MediaQuery.of(context).size.width * 0.1, // Responsive
+                    fontSize:
+                        MediaQuery.of(context).size.width * 0.1, // Responsive
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
                 ),
                 SizedBox(height: 10),
 
-                // Logo PQM (dengan ukuran responsif)
                 Image.asset(
                   'assets/images/Logo_PQM.png',
-                  width: MediaQuery.of(context).size.width * 0.4, // 40% dari layar
+                  width: MediaQuery.of(context).size.width * 0.4,
                 ),
                 SizedBox(height: 10),
 
-                // Subtitle "Power Quality Meter"
                 Text(
                   'Power Quality Meter',
                   style: TextStyle(
-                    fontSize: MediaQuery.of(context).size.width * 0.04, // Responsive
+                    fontSize:
+                        MediaQuery.of(context).size.width * 0.04, // Responsive
                     color: Colors.blueAccent,
                   ),
                 ),
@@ -63,9 +60,8 @@ class _WelcomePageState extends State<WelcomePage> {
             ),
           ),
 
-          Spacer(flex: 1), // Memberi sedikit ruang antara bagian tengah dan bawah
+          Spacer(flex: 1),
 
-          // Bagian bawah (Powered by TwaTech)
           Padding(
             padding: const EdgeInsets.only(bottom: 30),
             child: Text(
