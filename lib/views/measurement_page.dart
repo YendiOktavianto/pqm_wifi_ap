@@ -26,6 +26,7 @@ class _MeasurementPageState extends State<MeasurementPage> {
   Color groundStatusColor = Colors.red;
   String voltageValue = "0.0";
   String frequencyValue = "0.0";
+  int mode = 2;
 
   @override
   void initState() {
@@ -43,18 +44,32 @@ class _MeasurementPageState extends State<MeasurementPage> {
         num ground = (data['ground'] ?? 0.0);
         num voltage = (data['voltage'] ?? 0);
         num frequency = (data['frequency'] ?? 0);
+        int receivedMode = data['mode'] ?? 0;
 
         setState(() {
           groundValue = ground.toStringAsFixed(1);
           voltageValue = voltage.toString();
           frequencyValue = frequency.toString();
+          mode = receivedMode;
 
-          if (ground > 1.0) {
+          if (mode == 3) {
+            groundValue = "GROUND NOT CONNECTED";
             groundStatus = "Fail";
             groundStatusColor = Colors.red;
+            voltageValue = "---";
+            frequencyValue = "---";
           } else {
-            groundStatus = "Pass";
-            groundStatusColor = Colors.green;
+            groundValue = ground.toStringAsFixed(1);
+            voltageValue = voltage.toString();
+            frequencyValue = frequency.toString();
+
+            if (ground > 1.0) {
+              groundStatus = "Fail";
+              groundStatusColor = Colors.red;
+            } else {
+              groundStatus = "Pass";
+              groundStatusColor = Colors.green;
+            }
           }
         });
       } else {
@@ -69,131 +84,123 @@ class _MeasurementPageState extends State<MeasurementPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+      body: SafeArea(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            SizedBox(height: 40),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [DateTimeDisplay(), DeviceInfoColumn()],
-            ),
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.teal,
-                    foregroundColor: Colors.white,
-                  ),
-                  onPressed: () {},
-                  child: const Text('Refresh'),
-                ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.teal,
-                    foregroundColor: Colors.white,
-                  ),
-                  onPressed: () {},
-                  child: const Text('Disconnect'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            MeasurementDisplay(
-              groundValue: groundValue,
-              groundStatus: groundStatus,
-              groundStatusColor: groundStatusColor,
-              voltageValue: voltageValue,
-              frequencyValue: frequencyValue,
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              'Do You Want Recording Data?',
-              style: TextStyle(color: Colors.white, fontSize: 16),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: ListTile(
-                    title: const Text(
-                      'NO',
-                      style: TextStyle(color: Colors.white),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 40),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [DateTimeDisplay(), DeviceInfoColumn()],
                     ),
-                    leading: Radio<bool>(
-                      value: false,
-                      groupValue: isRecording,
-                      onChanged:
-                          (bool? value) => setState(() => isRecording = value!),
+                    const SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.teal,
+                            foregroundColor: Colors.white,
+                          ),
+                          onPressed: () {},
+                          child: const Text('Refresh'),
+                        ),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.teal,
+                            foregroundColor: Colors.white,
+                          ),
+                          onPressed: () {},
+                          child: const Text('Disconnect'),
+                        ),
+                      ],
                     ),
-                  ),
-                ),
-                Expanded(
-                  child: ListTile(
-                    title: const Text(
-                      'YES',
-                      style: TextStyle(color: Colors.white),
+                    const SizedBox(height: 20),
+                    MeasurementDisplay(
+                      groundValue: groundValue,
+                      groundStatus: groundStatus,
+                      groundStatusColor: groundStatusColor,
+                      voltageValue: voltageValue,
+                      frequencyValue: frequencyValue,
                     ),
-                    leading: Radio<bool>(
-                      value: true,
-                      groupValue: isRecording,
-                      onChanged:
-                          (bool? value) => setState(() => isRecording = value!),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    decoration: InputDecoration(
-                      hintText: 'Enter duration here',
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(5),
+                    const SizedBox(height: 20),
+                    Center(
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          setState(() {
+                            isRecording = !isRecording;
+                          });
+                        },
+                        icon: Icon(
+                          isRecording
+                              ? Icons.stop_circle
+                              : Icons.fiber_manual_record,
+                          color: Colors.white,
+                        ),
+                        label: Text(
+                          isRecording ? 'Stop Recording Data' : 'Record Data',
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              isRecording ? Colors.red : Colors.green,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
-                const SizedBox(width: 10),
-                const Text("Minute(s)", style: TextStyle(color: Colors.white)),
-              ],
+              ),
             ),
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                actionButton(
-                  context,
-                  'BACK',
-                  () => Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const ConnectedDevicePage(),
-                    ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Column(
+                children: [
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      actionButton(
+                        context,
+                        'BACK',
+                        () => Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const ConnectedDevicePage(),
+                          ),
+                        ),
+                      ),
+                      actionButton(context, 'CANCEL', () {}),
+                      actionButton(
+                        context,
+                        'START',
+                        () => Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const RecordingPage(),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                actionButton(context, 'CANCEL', () {}),
-                actionButton(
-                  context,
-                  'START',
-                  () => Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const RecordingPage(),
-                    ),
-                  ),
-                ),
-              ],
+                  const SizedBox(height: 20),
+                  const ExitAppButton(),
+                ],
+              ),
             ),
-            const SizedBox(height: 20),
-            const ExitAppButton(),
           ],
         ),
       ),

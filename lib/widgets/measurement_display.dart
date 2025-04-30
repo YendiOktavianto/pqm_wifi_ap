@@ -60,7 +60,7 @@ class MeasurementDisplay extends StatelessWidget {
                     groundValue,
                     style: TextStyle(
                       color: groundStatusColor,
-                      fontSize: 48,
+                      fontSize: groundValue.length > 10 ? 27 : 48,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
