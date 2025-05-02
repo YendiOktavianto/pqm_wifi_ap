@@ -10,6 +10,7 @@ import '../widgets/device_info_column.dart';
 import '../widgets/measurement_label.dart';
 import '../widgets/exit_app_button.dart';
 import '../widgets/measurement_display.dart';
+import '../services/recording_data.dart';
 
 class MeasurementPage extends StatefulWidget {
   const MeasurementPage({super.key});
@@ -27,6 +28,8 @@ class _MeasurementPageState extends State<MeasurementPage> {
   String voltageValue = "0.0";
   String frequencyValue = "0.0";
   int mode = 2;
+
+  final RecordingData _recordingData = RecordingData();
 
   @override
   void initState() {
@@ -132,10 +135,81 @@ class _MeasurementPageState extends State<MeasurementPage> {
                     Center(
                       child: ElevatedButton.icon(
                         onPressed: () {
-                          setState(() {
-                            isRecording = !isRecording;
-                          });
+                          if (!isRecording) {
+                            setState(() {
+                              isRecording = true;
+                              _recordingData.start();
+                            });
+                          } else {
+                            showDialog(
+                              context: context,
+                              barrierDismissible: false,
+                              builder: (context) {
+                                return AlertDialog(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  title: const Text(
+                                    'Confirm Stop Recording',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  content: const Text(
+                                    'Are you sure you want to stop recording and save the data to an Excel file?',
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      style: TextButton.styleFrom(
+                                        backgroundColor: Colors.grey[300],
+                                        foregroundColor: Colors.black87,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 16,
+                                          vertical: 12,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                      ),
+                                      child: const Text('Cancel'),
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                    ),
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.orange[700],
+                                        foregroundColor: Colors.white,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 16,
+                                          vertical: 12,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                      ),
+                                      child: const Text('Yes, Save and Stop'),
+                                      onPressed: () {
+                                        setState(() {
+                                          isRecording = false;
+                                          _recordingData.stop();
+                                          _recordingData.reset();
+                                          // TODO: Simpan ke Excel
+                                        });
+                                        Navigator.of(context).pop();
+                                      },
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          }
                         },
+
                         icon: Icon(
                           isRecording
                               ? Icons.stop_circle
@@ -161,6 +235,21 @@ class _MeasurementPageState extends State<MeasurementPage> {
                         ),
                       ),
                     ),
+                    if (isRecording)
+                      AnimatedBuilder(
+                        animation: _recordingData,
+                        builder: (context, _) {
+                          return Text(
+                            _recordingData.formattedTime,
+                            style: const TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white70,
+                            ),
+                            textAlign: TextAlign.center,
+                          );
+                        },
+                      ),
                   ],
                 ),
               ),
