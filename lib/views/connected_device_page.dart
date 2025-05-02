@@ -94,14 +94,6 @@ class ConnectedDevicePage extends StatelessWidget {
                       backgroundColor: Colors.teal,
                       foregroundColor: Colors.white,
                     ),
-                    onPressed: () {},
-                    child: const Text('CANCEL'),
-                  ),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.teal,
-                      foregroundColor: Colors.white,
-                    ),
                     onPressed: () {
                       Navigator.pushReplacement(
                         context,

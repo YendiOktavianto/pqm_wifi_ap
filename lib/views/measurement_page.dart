@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import 'connected_device_page.dart';
+import 'main_menu_page.dart';
 import 'recording_page.dart';
 import '../widgets/date_time_display.dart';
 import '../widgets/device_info_column.dart';
@@ -83,6 +84,64 @@ class _MeasurementPageState extends State<MeasurementPage> {
     }
   }
 
+  void _confirmStopRecording(VoidCallback onConfirmed) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: const Text(
+            'Confirm Stop Recording',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          content: const Text(
+            'Are you sure you want to stop recording and save the data to an Excel file?',
+          ),
+          actions: [
+            TextButton(
+              style: TextButton.styleFrom(
+                backgroundColor: Colors.grey[300],
+                foregroundColor: Colors.black87,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange[700],
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text('Yes, Save and Stop'),
+              onPressed: () {
+                onConfirmed();
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -141,72 +200,14 @@ class _MeasurementPageState extends State<MeasurementPage> {
                               _recordingData.start();
                             });
                           } else {
-                            showDialog(
-                              context: context,
-                              barrierDismissible: false,
-                              builder: (context) {
-                                return AlertDialog(
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  title: const Text(
-                                    'Confirm Stop Recording',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  content: const Text(
-                                    'Are you sure you want to stop recording and save the data to an Excel file?',
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      style: TextButton.styleFrom(
-                                        backgroundColor: Colors.grey[300],
-                                        foregroundColor: Colors.black87,
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 16,
-                                          vertical: 12,
-                                        ),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            12,
-                                          ),
-                                        ),
-                                      ),
-                                      child: const Text('Cancel'),
-                                      onPressed: () {
-                                        Navigator.of(context).pop();
-                                      },
-                                    ),
-                                    ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.orange[700],
-                                        foregroundColor: Colors.white,
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 16,
-                                          vertical: 12,
-                                        ),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            12,
-                                          ),
-                                        ),
-                                      ),
-                                      child: const Text('Yes, Save and Stop'),
-                                      onPressed: () {
-                                        setState(() {
-                                          isRecording = false;
-                                          _recordingData.stop();
-                                          _recordingData.reset();
-                                          // TODO: Simpan ke Excel
-                                        });
-                                        Navigator.of(context).pop();
-                                      },
-                                    ),
-                                  ],
-                                );
-                              },
-                            );
+                            _confirmStopRecording(() {
+                              setState(() {
+                                isRecording = false;
+                                _recordingData.stop();
+                                _recordingData.reset();
+                                // TODO: Simpan ke Excel
+                              });
+                            });
                           }
                         },
 
@@ -262,27 +263,58 @@ class _MeasurementPageState extends State<MeasurementPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      actionButton(
-                        context,
-                        'BACK',
-                        () => Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const ConnectedDevicePage(),
-                          ),
-                        ),
-                      ),
-                      actionButton(context, 'CANCEL', () {}),
-                      actionButton(
-                        context,
-                        'START',
-                        () => Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const RecordingPage(),
-                          ),
-                        ),
-                      ),
+                      actionButton(context, 'BACK', () {
+                        if (isRecording) {
+                          _confirmStopRecording(() {
+                            setState(() {
+                              isRecording = false;
+                              _recordingData.stop();
+                              _recordingData.reset();
+                            });
+                            Future.delayed(Duration(milliseconds: 200), () {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const ConnectedDevicePage(),
+                                ),
+                              );
+                            });
+                          });
+                        } else {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const ConnectedDevicePage(),
+                            ),
+                          );
+                        }
+                      }),
+                      actionButton(context, 'MAIN MENU', () {
+                        if (isRecording) {
+                          _confirmStopRecording(() {
+                            setState(() {
+                              isRecording = false;
+                              _recordingData.stop();
+                              _recordingData.reset();
+                            });
+                            Future.delayed(Duration(milliseconds: 200), () {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const MainMenuPage(),
+                                ),
+                              );
+                            });
+                          });
+                        } else {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const MainMenuPage(),
+                            ),
+                          );
+                        }
+                      }),
                     ],
                   ),
                   const SizedBox(height: 20),

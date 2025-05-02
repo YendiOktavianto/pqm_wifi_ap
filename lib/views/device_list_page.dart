@@ -17,9 +17,6 @@ class _DeviceListPageState extends State<DeviceListPage> {
 
   final List<Map<String, String>> devices = [
     {'type': 'PQM-500Wi', 'serial': '123456'},
-    {'type': 'PQM-500Wi', 'serial': '777777'},
-    {'type': 'PQM-500Wi', 'serial': '888888'},
-    {'type': 'PQM-500Wi', 'serial': '999999'},
   ];
 
   @override
@@ -82,16 +79,6 @@ class _DeviceListPageState extends State<DeviceListPage> {
                     ),
                     child: const Text(
                       'BACK',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.teal[700],
-                    ),
-                    child: const Text(
-                      'CANCEL',
                       style: TextStyle(color: Colors.white),
                     ),
                   ),

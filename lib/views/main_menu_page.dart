@@ -4,7 +4,6 @@ import 'device_list_page.dart';
 import 'second_welcome_page.dart';
 import 'open_search_file_page.dart';
 import 'rename_file_page.dart';
-import 'export_search_file_page.dart';
 import '../widgets/date_time_display.dart';
 import '../widgets/exit_app_button.dart';
 
@@ -21,36 +20,8 @@ class MainMenuPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             SizedBox(height: 40),
-            // Waktu
             Align(alignment: Alignment.topLeft, child: const DateTimeDisplay()),
-            SizedBox(height: 20),
-
-            // Tombol Bluetooth
-            ElevatedButton.icon(
-              onPressed: () {},
-              icon: Container(
-                padding: const EdgeInsets.all(6),
-                decoration: const BoxDecoration(
-                  color: Colors.blue,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.wifi,
-                  color: Colors.white,
-                  size: 20,
-                ),
-              ),
-              label: Text(
-                "Turn WIFI ON",
-                style: TextStyle(color: Colors.white),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.teal,
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-              ),
-            ),
-            SizedBox(height: 20),
-
+            SizedBox(height: 40),
             // Menu Buttons
             _buildMenuButton(
               "Voltage & Ground Measurement",
@@ -64,29 +35,8 @@ class MainMenuPage extends StatelessWidget {
               context,
               OpenSearchFilePage(),
             ),
-            _buildMenuButton(
-              "Rename File",
-              "assets/images/Rename_File_Logo.png",
-              context,
-              RenameFilePage(),
-            ),
-            _buildMenuButton(
-              "Export File",
-              "assets/images/Export_File_Logo.png",
-              context,
-              ExportSearchFilePage(),
-            ),
-            _buildMenuButton(
-              "Setting",
-              "assets/images/Setting_Logo.png",
-              context,
-              null,
-            ),
-
             SizedBox(height: 20),
-
             Spacer(),
-
             // Action Buttons
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -97,8 +47,6 @@ class MainMenuPage extends StatelessWidget {
                   context,
                   SecondWelcomePage(),
                 ),
-                _buildActionButton("CANCEL", Colors.teal, context, null),
-                _buildActionButton("SAVE", Colors.teal, context, null),
               ],
             ),
             SizedBox(height: 20),

@@ -88,31 +88,6 @@ class SecondWelcomePage extends StatelessWidget {
 
           Column(
             children: [
-              ElevatedButton.icon(
-                onPressed: () {
-                  context.read<WifiService>().toggleWifi();
-                },
-                icon: const Icon(Icons.wifi, color: Colors.white),
-                label: Consumer<WifiService>(
-                  builder: (context, wifiService, child) {
-                    return Text(
-                      wifiService.isWifiOn ? "Turn WIFI OFF" : "Turn WIFI ON",
-                      style: TextStyle(color: Colors.white),
-                    );
-                  },
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                      context.watch<WifiService>().isWifiOn
-                          ? Colors.red
-                          : Colors.blue,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 15,
-                  ),
-                ),
-              ),
-              SizedBox(height: 10),
               ElevatedButton(
                 onPressed: () {
                   Navigator.pushReplacement(
