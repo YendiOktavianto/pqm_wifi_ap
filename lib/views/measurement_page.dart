@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:excel/excel.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'dart:io';
 
 import 'connected_device_page.dart';
 import 'main_menu_page.dart';
@@ -44,6 +48,7 @@ class _MeasurementPageState extends State<MeasurementPage> {
     try {
       final response = await http.get(Uri.parse('http://192.168.4.1/'));
       if (response.statusCode == 200) {
+        // print('RESPONSE: ${response.body}');
         final data = json.decode(response.body);
         num ground = (data['ground'] ?? 0.0);
         num voltage = (data['voltage'] ?? 0);
@@ -55,6 +60,12 @@ class _MeasurementPageState extends State<MeasurementPage> {
           voltageValue = voltage.toString();
           frequencyValue = frequency.toString();
           mode = receivedMode;
+
+          // print('Formatted values:');
+          // print('  groundValue: $groundValue');
+          // print('  voltageValue: $voltageValue');
+          // print('  frequencyValue: $frequencyValue');
+          // print('  mode: $mode');
 
           if (mode == 3) {
             groundValue = "GROUND NOT CONNECTED";
@@ -76,12 +87,126 @@ class _MeasurementPageState extends State<MeasurementPage> {
             }
           }
         });
+
+        if (_recordingData.isRecording) {
+          bool isConnected = receivedMode != 3;
+
+          double groundParsed = double.tryParse(groundValue) ?? 0.0;
+          int voltageParsed = int.tryParse(voltageValue) ?? 0;
+          int frequencyParsed = int.tryParse(frequencyValue) ?? 0;
+
+          // print('RECORDING:');
+          // print('  ground: $groundParsed');
+          // print('  voltage: $voltageParsed');
+          // print('  frequency: $frequencyParsed');
+          // print(
+          //   '  status: ${isConnected ? "Ground Connected" : "Ground Not Connected"}',
+          // );
+
+          _recordingData.addRecord(
+            ground: isConnected ? groundParsed : 0.0,
+            voltage: isConnected ? voltageParsed : 0,
+            frequency: isConnected ? frequencyParsed : 0,
+            groundConnected: isConnected,
+          );
+        }
       } else {
         print('Failed to fetch data: ${response.statusCode}');
       }
     } catch (e) {
       print('Error fetching data: $e');
     }
+  }
+
+  Future<void> saveExcelToExternalStorage(BuildContext context) async {
+    TextEditingController filenameController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Save File As'),
+          content: TextField(
+            controller: filenameController,
+            decoration: const InputDecoration(hintText: "Enter filename..."),
+          ),
+          actions: [
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () => Navigator.pop(context),
+            ),
+            ElevatedButton(
+              child: const Text('Save'),
+              onPressed: () async {
+                final filename = filenameController.text.trim();
+                if (filename.isEmpty) {
+                  return;
+                }
+
+                var status = await Permission.manageExternalStorage.status;
+                if (!status.isGranted) {
+                  status = await Permission.manageExternalStorage.request();
+                  if (!status.isGranted) {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Permission denied")),
+                    );
+                    return;
+                  }
+                }
+
+                try {
+                  final dir = Directory('/storage/emulated/0/Documents');
+                  if (!(await dir.exists())) {
+                    await dir.create(recursive: true);
+                  }
+
+                  final fullPath = '${dir.path}/$filename.xlsx';
+
+                  final excel = Excel.createExcel();
+                  final sheet = excel['Sheet1'];
+                  sheet.appendRow([
+                    'Time',
+                    'Ground',
+                    'Voltage',
+                    'Frequency',
+                    'Status',
+                  ]);
+                  for (var row in _recordingData.records) {
+                    // print('Waktu tercatat: ${row['time']}');
+                    sheet.appendRow([
+                      row['time'],
+                      row['ground'],
+                      row['voltage'],
+                      row['frequency'],
+                      row['status'],
+                    ]);
+                  }
+
+                  final bytes = excel.encode();
+                  if (bytes != null) {
+                    final file = File(fullPath);
+                    await file.create(recursive: true);
+                    await file.writeAsBytes(bytes);
+
+                    _recordingData.reset();
+                  }
+
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("File saved to:\n$fullPath")),
+                  );
+                } catch (e) {
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text("Failed to save: $e")));
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _confirmStopRecording(VoidCallback onConfirmed) {
@@ -118,6 +243,28 @@ class _MeasurementPageState extends State<MeasurementPage> {
                 Navigator.of(context).pop();
               },
             ),
+            // TextButton(
+            //   style: TextButton.styleFrom(
+            //     backgroundColor: Colors.blue[100],
+            //     foregroundColor: Colors.blue[900],
+            //     padding: const EdgeInsets.symmetric(
+            //       horizontal: 16,
+            //       vertical: 12,
+            //     ),
+            //     shape: RoundedRectangleBorder(
+            //       borderRadius: BorderRadius.circular(12),
+            //     ),
+            //   ),
+            //   child: const Text('Only Stop'),
+            //   onPressed: () {
+            //     setState(() {
+            //       isRecording = false;
+            //       _recordingData.stop();
+            //       _recordingData.reset();
+            //     });
+            //     Navigator.of(context).pop();
+            //   },
+            // ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.orange[700],
@@ -134,6 +281,7 @@ class _MeasurementPageState extends State<MeasurementPage> {
               onPressed: () {
                 onConfirmed();
                 Navigator.of(context).pop();
+                saveExcelToExternalStorage(context);
               },
             ),
           ],
@@ -204,8 +352,7 @@ class _MeasurementPageState extends State<MeasurementPage> {
                               setState(() {
                                 isRecording = false;
                                 _recordingData.stop();
-                                _recordingData.reset();
-                                // TODO: Simpan ke Excel
+                                // _recordingData.reset();
                               });
                             });
                           }
@@ -275,7 +422,8 @@ class _MeasurementPageState extends State<MeasurementPage> {
                               Navigator.pushReplacement(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => const ConnectedDevicePage(),
+                                  builder:
+                                      (context) => const ConnectedDevicePage(),
                                 ),
                               );
                             });

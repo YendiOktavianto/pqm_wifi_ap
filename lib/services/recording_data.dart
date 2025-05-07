@@ -1,48 +1,90 @@
-// lib/services/recording_data.dart
+import 'package:flutter/foundation.dart';
+import 'package:intl/intl.dart';
 import 'dart:async';
-import 'package:flutter/material.dart';
 
 class RecordingData extends ChangeNotifier {
-  Timer? _timer;
-  int _secondsElapsed = 0;
   bool _isRecording = false;
+  final List<Map<String, String>> _records = [];
 
-  bool get isRecording => _isRecording;
+  final Stopwatch _stopwatch = Stopwatch();
+  late final Ticker _ticker;
 
-  String get formattedTime {
-    final hours = _secondsElapsed ~/ 3600;
-    final minutes = (_secondsElapsed % 3600) ~/ 60;
-    final seconds = _secondsElapsed % 60;
-    return '${hours.toString().padLeft(2, '0')}:'
-        '${minutes.toString().padLeft(2, '0')}:'
-        '${seconds.toString().padLeft(2, '0')}';
+  RecordingData() {
+    _ticker = Ticker(_onTick);
   }
 
+  void _onTick(Duration _) => notifyListeners();
+
   void start() {
-    if (_isRecording) return;
     _isRecording = true;
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      _secondsElapsed++;
-      notifyListeners();
-    });
-    notifyListeners();
+    _stopwatch.start();
+    _ticker.start();
+    _records.clear();
   }
 
   void stop() {
     _isRecording = false;
-    _timer?.cancel();
-    notifyListeners();
+    _stopwatch.stop();
+    _ticker.stop();
   }
 
   void reset() {
-    stop();
-    _secondsElapsed = 0;
+    _stopwatch.reset();
+    _records.clear();
     notifyListeners();
   }
 
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
+  bool get isRecording => _isRecording;
+
+  String get formattedTime {
+    final elapsed = _stopwatch.elapsed;
+    return '${elapsed.inMinutes.remainder(60).toString().padLeft(2, '0')}:${elapsed.inSeconds.remainder(60).toString().padLeft(2, '0')}';
+  }
+
+  void addRecord({
+    required double ground,
+    required int voltage,
+    required int frequency,
+    required bool groundConnected,
+  }) {
+    if (!_isRecording) return;
+
+    final now = DateTime.now();
+    final formattedDate = DateFormat(
+      "d MMMM yyyy HH:mm:ss",
+      'id_ID',
+    ).format(now);
+
+    _records.add({
+      'time': formattedDate,
+      'ground': '${ground.toStringAsFixed(1)} Volt',
+      'voltage': '$voltage Volt',
+      'frequency': '$frequency Hz',
+      'status': groundConnected ? 'Ground Connected' : 'Ground Not Connected',
+    });
+  }
+
+  List<Map<String, String>> get records => List.unmodifiable(_records);
+}
+
+class Ticker {
+  final void Function(Duration) onTick;
+  late final Stopwatch _stopwatch;
+  late final Duration _interval;
+  late Timer _timer;
+
+  Ticker(this.onTick) {
+    _stopwatch = Stopwatch();
+    _interval = const Duration(seconds: 1);
+  }
+
+  void start() {
+    _stopwatch.start();
+    _timer = Timer.periodic(_interval, (timer) => onTick(_stopwatch.elapsed));
+  }
+
+  void stop() {
+    _stopwatch.stop();
+    _timer.cancel();
   }
 }

@@ -1,0 +1,17 @@
+# Ignore Flutter log files
+*.log
+*.tmp
+*.stacktrace
+
+# Dart and Flutter
+.dart_tool/
+.packages
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# Crash logs
+android/hs_err_*.log
+
+# VSCode
+.vscode/
