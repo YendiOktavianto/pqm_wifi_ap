@@ -3,16 +3,13 @@ import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:excel/excel.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
 
 import 'connected_device_page.dart';
 import 'main_menu_page.dart';
-import 'recording_page.dart';
 import '../widgets/date_time_display.dart';
 import '../widgets/device_info_column.dart';
-import '../widgets/measurement_label.dart';
 import '../widgets/exit_app_button.dart';
 import '../widgets/measurement_display.dart';
 import '../services/recording_data.dart';
@@ -23,6 +20,8 @@ class MeasurementPage extends StatefulWidget {
   @override
   State<MeasurementPage> createState() => _MeasurementPageState();
 }
+
+Timer? _timer;
 
 class _MeasurementPageState extends State<MeasurementPage> {
   bool isRecording = false;
@@ -39,12 +38,20 @@ class _MeasurementPageState extends State<MeasurementPage> {
   @override
   void initState() {
     super.initState();
-    Timer.periodic(Duration(seconds: 2), (timer) {
+    _timer = Timer.periodic(Duration(seconds: 2), (timer) {
       fetchDataFromESP();
     });
   }
 
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _recordingData.stop();
+    super.dispose();
+  }
+
   Future<void> fetchDataFromESP() async {
+    if (!mounted) return;
     try {
       final response = await http.get(Uri.parse('http://192.168.4.1/'));
       if (response.statusCode == 200) {
@@ -54,6 +61,8 @@ class _MeasurementPageState extends State<MeasurementPage> {
         num voltage = (data['voltage'] ?? 0);
         num frequency = (data['frequency'] ?? 0);
         int receivedMode = data['mode'] ?? 0;
+
+        if (!mounted) return;
 
         setState(() {
           groundValue = ground.toStringAsFixed(1);
@@ -133,7 +142,10 @@ class _MeasurementPageState extends State<MeasurementPage> {
           actions: [
             TextButton(
               child: const Text('Cancel'),
-              onPressed: () => Navigator.pop(context),
+              onPressed: () {
+                _recordingData.reset();
+                Navigator.pop(context);
+              },
             ),
             ElevatedButton(
               child: const Text('Save'),
@@ -209,7 +221,105 @@ class _MeasurementPageState extends State<MeasurementPage> {
     );
   }
 
-  void _confirmStopRecording(VoidCallback onConfirmed) {
+  void saveAndThenNavigate(BuildContext context, Widget nextPage) {
+    TextEditingController filenameController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Save File As'),
+          content: TextField(
+            controller: filenameController,
+            decoration: const InputDecoration(hintText: "Enter filename..."),
+          ),
+          actions: [
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                _recordingData.reset(); //
+                Navigator.pop(context);
+                Future.delayed(Duration(milliseconds: 300), () {
+                  Navigator.of(context, rootNavigator: true).pushReplacement(
+                    MaterialPageRoute(builder: (_) => nextPage),
+                  );
+                });
+              },
+            ),
+            ElevatedButton(
+              child: const Text('Save'),
+              onPressed: () async {
+                final filename = filenameController.text.trim();
+                if (filename.isEmpty) return;
+
+                var status = await Permission.manageExternalStorage.status;
+                if (!status.isGranted) {
+                  status = await Permission.manageExternalStorage.request();
+                  if (!status.isGranted) {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Permission denied")),
+                    );
+                    return;
+                  }
+                }
+
+                try {
+                  final dir = Directory('/storage/emulated/0/Documents');
+                  if (!(await dir.exists())) {
+                    await dir.create(recursive: true);
+                  }
+
+                  final fullPath = '${dir.path}/$filename.xlsx';
+                  final excel = Excel.createExcel();
+                  final sheet = excel['Sheet1'];
+                  sheet.appendRow([
+                    'Time',
+                    'Ground',
+                    'Voltage',
+                    'Frequency',
+                    'Status',
+                  ]);
+                  for (var row in _recordingData.records) {
+                    sheet.appendRow([
+                      "'${row['time']}'",
+                      row['ground'],
+                      row['voltage'],
+                      row['frequency'],
+                      row['status'],
+                    ]);
+                  }
+
+                  final bytes = excel.encode();
+                  if (bytes != null) {
+                    final file = File(fullPath);
+                    await file.create(recursive: true);
+                    await file.writeAsBytes(bytes);
+                    _recordingData.reset();
+                  }
+
+                  Navigator.pop(context); // close save dialog
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => nextPage),
+                  );
+                } catch (e) {
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text("Failed to save: $e")));
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _confirmStopRecording(
+    VoidCallback onConfirmed, {
+    Widget? navigateToAfterStop,
+  }) {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -226,63 +336,85 @@ class _MeasurementPageState extends State<MeasurementPage> {
             'Are you sure you want to stop recording and save the data to an Excel file?',
           ),
           actions: [
-            TextButton(
-              style: TextButton.styleFrom(
-                backgroundColor: Colors.grey[300],
-                foregroundColor: Colors.black87,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: TextButton(
+                    style: TextButton.styleFrom(
+                      backgroundColor: Colors.grey[300],
+                      foregroundColor: Colors.black87,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text('Cancel'),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
                 ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: TextButton(
+                    style: TextButton.styleFrom(
+                      backgroundColor: Colors.blue[100],
+                      foregroundColor: Colors.blue[900],
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text('Only Stop'),
+                    onPressed: () {
+                      setState(() {
+                        isRecording = false;
+                        _recordingData.stop();
+                        _recordingData.reset();
+                      });
+                      Navigator.of(context).pop();
+
+                      if (navigateToAfterStop != null) {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => navigateToAfterStop,
+                          ),
+                        );
+                      }
+                    },
+                  ),
                 ),
-              ),
-              child: const Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            // TextButton(
-            //   style: TextButton.styleFrom(
-            //     backgroundColor: Colors.blue[100],
-            //     foregroundColor: Colors.blue[900],
-            //     padding: const EdgeInsets.symmetric(
-            //       horizontal: 16,
-            //       vertical: 12,
-            //     ),
-            //     shape: RoundedRectangleBorder(
-            //       borderRadius: BorderRadius.circular(12),
-            //     ),
-            //   ),
-            //   child: const Text('Only Stop'),
-            //   onPressed: () {
-            //     setState(() {
-            //       isRecording = false;
-            //       _recordingData.stop();
-            //       _recordingData.reset();
-            //     });
-            //     Navigator.of(context).pop();
-            //   },
-            // ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange[700],
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
+                const SizedBox(width: 8),
+                Expanded(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orange[700],
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text('Yes, Save and Stop'),
+                    onPressed: () {
+                      onConfirmed();
+                      Navigator.of(context).pop();
+                      saveExcelToExternalStorage(context);
+                    },
+                  ),
                 ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: const Text('Yes, Save and Stop'),
-              onPressed: () {
-                onConfirmed();
-                Navigator.of(context).pop();
-                saveExcelToExternalStorage(context);
-              },
+              ],
             ),
           ],
         );
@@ -307,28 +439,6 @@ class _MeasurementPageState extends State<MeasurementPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [DateTimeDisplay(), DeviceInfoColumn()],
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.teal,
-                            foregroundColor: Colors.white,
-                          ),
-                          onPressed: () {},
-                          child: const Text('Refresh'),
-                        ),
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.teal,
-                            foregroundColor: Colors.white,
-                          ),
-                          onPressed: () {},
-                          child: const Text('Disconnect'),
-                        ),
-                      ],
                     ),
                     const SizedBox(height: 20),
                     MeasurementDisplay(
@@ -416,18 +526,12 @@ class _MeasurementPageState extends State<MeasurementPage> {
                             setState(() {
                               isRecording = false;
                               _recordingData.stop();
-                              _recordingData.reset();
                             });
-                            Future.delayed(Duration(milliseconds: 200), () {
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                  builder:
-                                      (context) => const ConnectedDevicePage(),
-                                ),
-                              );
-                            });
-                          });
+                            saveAndThenNavigate(
+                              context,
+                              const ConnectedDevicePage(),
+                            );
+                          }, navigateToAfterStop: const ConnectedDevicePage());
                         } else {
                           Navigator.pushReplacement(
                             context,
@@ -437,23 +541,16 @@ class _MeasurementPageState extends State<MeasurementPage> {
                           );
                         }
                       }),
+
                       actionButton(context, 'MAIN MENU', () {
                         if (isRecording) {
                           _confirmStopRecording(() {
                             setState(() {
                               isRecording = false;
                               _recordingData.stop();
-                              _recordingData.reset();
                             });
-                            Future.delayed(Duration(milliseconds: 200), () {
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const MainMenuPage(),
-                                ),
-                              );
-                            });
-                          });
+                            saveAndThenNavigate(context, const MainMenuPage());
+                          }, navigateToAfterStop: const MainMenuPage());
                         } else {
                           Navigator.pushReplacement(
                             context,

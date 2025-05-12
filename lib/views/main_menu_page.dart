@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:pqm_app/views/export_search_file_page.dart';
 import 'device_list_page.dart';
 import 'second_welcome_page.dart';
 import 'open_search_file_page.dart';
-import 'rename_file_page.dart';
 import '../widgets/date_time_display.dart';
 import '../widgets/exit_app_button.dart';
+import '../services/open_file_service.dart';
 
 class MainMenuPage extends StatelessWidget {
   const MainMenuPage({super.key});
@@ -33,7 +32,16 @@ class MainMenuPage extends StatelessWidget {
               "Open File",
               "assets/images/Open_File_Logo.png",
               context,
-              OpenSearchFilePage(),
+              null,
+              onTap: () async {
+                try {
+                  await OpenFileService.openFileManager();
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Gagal membuka file manager: $e')),
+                  );
+                }
+              },
             ),
             SizedBox(height: 20),
             Spacer(),
@@ -62,8 +70,9 @@ class MainMenuPage extends StatelessWidget {
     String title,
     String iconPath,
     BuildContext context,
-    Widget? page,
-  ) {
+    Widget? page, {
+    VoidCallback? onTap,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: ElevatedButton(
@@ -75,7 +84,9 @@ class MainMenuPage extends StatelessWidget {
           ),
         ),
         onPressed: () {
-          if (page != null) {
+          if (onTap != null) {
+            onTap();
+          } else if (page != null) {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => page),

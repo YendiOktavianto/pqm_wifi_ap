@@ -38,7 +38,9 @@ class RecordingData extends ChangeNotifier {
 
   String get formattedTime {
     final elapsed = _stopwatch.elapsed;
-    return '${elapsed.inMinutes.remainder(60).toString().padLeft(2, '0')}:${elapsed.inSeconds.remainder(60).toString().padLeft(2, '0')}';
+    return '${elapsed.inHours.toString().padLeft(2, '0')}:'
+        '${elapsed.inMinutes.remainder(60).toString().padLeft(2, '0')}:'
+        '${elapsed.inSeconds.remainder(60).toString().padLeft(2, '0')}';
   }
 
   void addRecord({
