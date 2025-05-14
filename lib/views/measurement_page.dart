@@ -409,8 +409,11 @@ class _MeasurementPageState extends State<MeasurementPage> {
                     child: const Text('Yes, Save and Stop'),
                     onPressed: () {
                       onConfirmed();
-                      Navigator.of(context).pop();
-                      saveExcelToExternalStorage(context);
+                      saveAndThenNavigate(
+                        context,
+                        navigateToAfterStop ??
+                            const MainMenuPage(),
+                      );
                     },
                   ),
                 ),

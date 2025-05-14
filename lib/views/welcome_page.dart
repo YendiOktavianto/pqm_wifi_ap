@@ -35,7 +35,7 @@ class _WelcomePageState extends State<WelcomePage> {
                   'PQM',
                   style: TextStyle(
                     fontSize:
-                        MediaQuery.of(context).size.width * 0.1, // Responsive
+                        MediaQuery.of(context).size.width * 0.1,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),

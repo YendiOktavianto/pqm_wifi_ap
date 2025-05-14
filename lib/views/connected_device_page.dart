@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'device_list_page.dart';
 import 'measurement_page.dart';
 import '../widgets/date_time_display.dart';
@@ -94,13 +95,42 @@ class ConnectedDevicePage extends StatelessWidget {
                       backgroundColor: Colors.teal,
                       foregroundColor: Colors.white,
                     ),
-                    onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const MeasurementPage(),
-                        ),
-                      );
+                    onPressed: () async {
+                      bool scanSent = false;
+                      try {
+                        final response = await http.get(
+                          Uri.parse('http://192.168.4.1/scan'),
+                        );
+                        if (response.statusCode == 200) {
+                          scanSent = true;
+                          print('SCAN request sent successfully.');
+                        }
+                      } catch (e) {
+                        print('First SCAN request failed: $e');
+                      }
+
+                      if (!scanSent) {
+                        await Future.delayed(Duration(milliseconds: 500));
+                        try {
+                          final response = await http.get(
+                            Uri.parse('http://192.168.4.1/scan'),
+                          );
+                          if (response.statusCode == 200) {
+                            print('Retry SCAN request sent successfully.');
+                          }
+                        } catch (e) {
+                          print('Retry failed: $e');
+                        }
+                      }
+
+                      if (context.mounted) {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const MeasurementPage(),
+                          ),
+                        );
+                      }
                     },
                     child: const Text('SCAN'),
                   ),

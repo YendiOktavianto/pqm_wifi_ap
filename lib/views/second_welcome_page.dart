@@ -13,7 +13,6 @@ class SecondWelcomePage extends StatelessWidget {
         children: [
           Spacer(),
 
-          // Logo dan teks utama
           Center(
             child: Column(
               children: [
@@ -95,11 +94,11 @@ class SecondWelcomePage extends StatelessWidget {
                     MaterialPageRoute(builder: (context) => MainMenuPage()),
                   );
                 },
-                child: Text("MAIN MENU", style: TextStyle(color: Colors.white)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blueAccent,
                   padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
                 ),
+                child: Text("MAIN MENU", style: TextStyle(color: Colors.white)),
               ),
               SizedBox(height: 20),
             ],

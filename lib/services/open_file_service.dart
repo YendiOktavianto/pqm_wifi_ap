@@ -13,7 +13,7 @@ class OpenFileService {
 
       await intent.launch();
     } on PlatformException catch (e) {
-      throw Exception("Gagal membuka file manager: $e");
+      throw Exception("Failed Open File Manager: $e");
     }
   }
 }
