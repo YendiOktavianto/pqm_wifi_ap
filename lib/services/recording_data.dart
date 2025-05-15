@@ -73,7 +73,7 @@ class Ticker {
   final void Function(Duration) onTick;
   late final Stopwatch _stopwatch;
   late final Duration _interval;
-  late Timer _timer;
+  Timer? _timer;
 
   Ticker(this.onTick) {
     _stopwatch = Stopwatch();
@@ -87,6 +87,6 @@ class Ticker {
 
   void stop() {
     _stopwatch.stop();
-    _timer.cancel();
+    _timer?.cancel();
   }
 }

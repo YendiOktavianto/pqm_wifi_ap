@@ -76,7 +76,7 @@ class _MeasurementPageState extends State<MeasurementPage> {
           // print('  frequencyValue: $frequencyValue');
           // print('  mode: $mode');
 
-          if (mode == 3) {
+          if (mode == 5) {
             groundValue = "GROUND NOT CONNECTED";
             groundStatus = "Fail";
             groundStatusColor = Colors.red;
@@ -98,7 +98,7 @@ class _MeasurementPageState extends State<MeasurementPage> {
         });
 
         if (_recordingData.isRecording) {
-          bool isConnected = receivedMode != 3;
+          bool isConnected = receivedMode != 5;
 
           double groundParsed = double.tryParse(groundValue) ?? 0.0;
           int voltageParsed = int.tryParse(voltageValue) ?? 0;
@@ -124,6 +124,14 @@ class _MeasurementPageState extends State<MeasurementPage> {
       }
     } catch (e) {
       print('Error fetching data: $e');
+    }
+  }
+
+  Future<void> setHardwareModeTo2() async {
+    try {
+      await http.get(Uri.parse('http://192.168.4.1/mode?value=2'));
+    } catch (e) {
+      print('Failed set mode to 2: $e');
     }
   }
 
@@ -185,7 +193,6 @@ class _MeasurementPageState extends State<MeasurementPage> {
                     'Status',
                   ]);
                   for (var row in _recordingData.records) {
-                    // print('Waktu tercatat: ${row['time']}');
                     sheet.appendRow([
                       row['time'],
                       row['ground'],
@@ -234,18 +241,6 @@ class _MeasurementPageState extends State<MeasurementPage> {
             decoration: const InputDecoration(hintText: "Enter filename..."),
           ),
           actions: [
-            TextButton(
-              child: const Text('Cancel'),
-              onPressed: () {
-                _recordingData.reset(); //
-                Navigator.pop(context);
-                Future.delayed(Duration(milliseconds: 300), () {
-                  Navigator.of(context, rootNavigator: true).pushReplacement(
-                    MaterialPageRoute(builder: (_) => nextPage),
-                  );
-                });
-              },
-            ),
             ElevatedButton(
               child: const Text('Save'),
               onPressed: () async {
@@ -282,7 +277,7 @@ class _MeasurementPageState extends State<MeasurementPage> {
                   ]);
                   for (var row in _recordingData.records) {
                     sheet.appendRow([
-                      "'${row['time']}'",
+                      row['time'],
                       row['ground'],
                       row['voltage'],
                       row['frequency'],
@@ -298,7 +293,18 @@ class _MeasurementPageState extends State<MeasurementPage> {
                     _recordingData.reset();
                   }
 
-                  Navigator.pop(context); // close save dialog
+                  try {
+                    await http.get(
+                      Uri.parse('http://192.168.4.1/mode?value=2'),
+                    );
+                    await Future.delayed(
+                      const Duration(milliseconds: 300),
+                    );
+                  } catch (e) {
+                    print('[ERROR] Gagal mengatur mode ke 2: $e');
+                  }
+
+                  Navigator.pop(context);
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(builder: (context) => nextPage),
@@ -411,8 +417,7 @@ class _MeasurementPageState extends State<MeasurementPage> {
                       onConfirmed();
                       saveAndThenNavigate(
                         context,
-                        navigateToAfterStop ??
-                            const MainMenuPage(),
+                        navigateToAfterStop ?? const MeasurementPage(),
                       );
                     },
                   ),
@@ -523,19 +528,21 @@ class _MeasurementPageState extends State<MeasurementPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      actionButton(context, 'BACK', () {
+                      actionButton(context, 'BACK', () async {
                         if (isRecording) {
-                          _confirmStopRecording(() {
+                          _confirmStopRecording(() async {
                             setState(() {
                               isRecording = false;
                               _recordingData.stop();
                             });
+                            await setHardwareModeTo2();
                             saveAndThenNavigate(
                               context,
                               const ConnectedDevicePage(),
                             );
                           }, navigateToAfterStop: const ConnectedDevicePage());
                         } else {
+                          await setHardwareModeTo2();
                           Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
@@ -545,7 +552,7 @@ class _MeasurementPageState extends State<MeasurementPage> {
                         }
                       }),
 
-                      actionButton(context, 'MAIN MENU', () {
+                      actionButton(context, 'MAIN MENU', () async {
                         if (isRecording) {
                           _confirmStopRecording(() {
                             setState(() {
@@ -555,6 +562,7 @@ class _MeasurementPageState extends State<MeasurementPage> {
                             saveAndThenNavigate(context, const MainMenuPage());
                           }, navigateToAfterStop: const MainMenuPage());
                         } else {
+                          await setHardwareModeTo2();
                           Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
