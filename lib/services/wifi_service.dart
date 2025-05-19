@@ -1,39 +1,14 @@
-import 'package:flutter/material.dart';
-import 'package:wifi_iot/wifi_iot.dart';
-import 'package:app_settings/app_settings.dart';
-import 'package:android_intent_plus/android_intent.dart';
+import 'package:http/http.dart' as http;
 
-class WifiService extends ChangeNotifier {
-  bool _isWifiOn = false;
-
-  bool get isWifiOn => _isWifiOn;
-
-  Future<void> toggleWifi() async {
-    print("[WIFI] Button pressed");
-
+class WifiService {
+  static Future<bool> isConnectedToESP() async {
     try {
-      bool? isEnabled = await WiFiForIoTPlugin.isEnabled();
-      print("[WIFI] isEnabled: $isEnabled");
-
-      if (isEnabled == true && _isWifiOn == true) {
-        print("[WIFI] Disabling...");
-        await WiFiForIoTPlugin.setEnabled(false);
-        _isWifiOn = false;
-        print("[WIFI] Disabled.");
-      } else {
-        print("[WIFI] Enabling...");
-        await WiFiForIoTPlugin.setEnabled(true);
-        _isWifiOn = true;
-        print("[WIFI] Enabled.");
-
-        final intent = AndroidIntent(action: 'android.settings.WIFI_SETTINGS');
-        await intent.launch();
-        print("[WIFI] Launched Wi-Fi Settings.");
-      }
-
-      notifyListeners();
-    } catch (e) {
-      print("[WIFI] Error: $e");
+      final response = await http
+          .get(Uri.parse('http://192.168.4.1/'))
+          .timeout(const Duration(seconds: 2));
+      return response.statusCode == 200;
+    } catch (_) {
+      return false;
     }
   }
 }

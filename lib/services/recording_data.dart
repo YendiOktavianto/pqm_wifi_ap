@@ -57,12 +57,21 @@ class RecordingData extends ChangeNotifier {
       'id_ID',
     ).format(now);
 
+    String status;
+    if (ground <= 1.0 && groundConnected) {
+      status = "Pass - Ground Connected";
+    } else if (ground > 1.0 && groundConnected) {
+      status = "Fail - Ground Connected";
+    } else {
+      status = "Fail - Ground Not Connected";
+    }
+
     _records.add({
       'time': formattedDate,
       'ground': '${ground.toStringAsFixed(1)} Volt',
       'voltage': '$voltage Volt',
       'frequency': '$frequency Hz',
-      'status': groundConnected ? 'Ground Connected' : 'Ground Not Connected',
+      'status': status,
     });
   }
 
