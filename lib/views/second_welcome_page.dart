@@ -1,10 +1,25 @@
+import 'package:app_settings/app_settings.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'main_menu_page.dart';
 import '../widgets/exit_app_button.dart';
 import '../services/wifi_service.dart';
 
 class SecondWelcomePage extends StatelessWidget {
+  const SecondWelcomePage({super.key});
+
+  Future<bool> isConnectedToESP() async {
+    try {
+      final response = await http
+          .get(Uri.parse('http://192.168.4.1/'))
+          .timeout(const Duration(seconds: 2));
+      return response.statusCode == 200;
+    } catch (_) {
+      return false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -67,7 +82,7 @@ class SecondWelcomePage extends StatelessWidget {
                       ),
                       SizedBox(height: 10),
                       Text(
-                        'TO CONNECT THIS APP TO PQM DEVICE, PLEASE MAKE SURE BLUETOOTH CONNECTION IS ON.',
+                        'TO CONNECT THIS APP TO PQM DEVICE, PLEASE MAKE SURE WIFI CONNECTION IS ON.',
                         style: TextStyle(
                           fontFamily: 'Poppins',
                           fontSize: 12,
@@ -88,19 +103,43 @@ class SecondWelcomePage extends StatelessWidget {
           Column(
             children: [
               ElevatedButton(
-                onPressed: () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => MainMenuPage()),
-                  );
+                onPressed: () async {
+                  final connected = await isConnectedToESP();
+                  if (connected) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Connected to PQM!"),
+                      ),
+                    );
+                    await Future.delayed(const Duration(seconds: 1));
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (_) => const MainMenuPage()),
+                    );
+                  } else {
+                    AppSettings.openAppSettings(type: AppSettingsType.wifi);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          "Failed Connect to PQM.\nPlease connect to PQM WiFi first!",
+                        ),
+                      ),
+                    );
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blueAccent,
-                  padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 50,
+                    vertical: 15,
+                  ),
                 ),
-                child: Text("MAIN MENU", style: TextStyle(color: Colors.white)),
+                child: const Text(
+                  "CHECK & CONNECT TO PQM WI-FI",
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 40),
             ],
           ),
           SizedBox(height: 20),
