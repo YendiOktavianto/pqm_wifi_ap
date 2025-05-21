@@ -1,3 +1,4 @@
+import 'package:pqm_app/core/animations/page_transition.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'second_welcome_page.dart';
@@ -14,7 +15,7 @@ class _WelcomePageState extends State<WelcomePage> {
     Future.delayed(Duration(seconds: 5), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => SecondWelcomePage()),
+        PageTransition.fadeSlideUp(const SecondWelcomePage()),
       );
     });
   }
@@ -34,8 +35,7 @@ class _WelcomePageState extends State<WelcomePage> {
                 Text(
                   'PQM',
                   style: TextStyle(
-                    fontSize:
-                        MediaQuery.of(context).size.width * 0.1,
+                    fontSize: MediaQuery.of(context).size.width * 0.1,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'device_list_page.dart';
 import 'second_welcome_page.dart';
-import 'open_search_file_page.dart';
 import '../widgets/date_time_display.dart';
 import '../widgets/exit_app_button.dart';
 import '../services/open_file_service.dart';
@@ -42,6 +41,26 @@ class MainMenuPage extends StatelessWidget {
                   );
                 }
               },
+            ),
+            _buildMenuButton(
+              "Rename File (Under Development)",
+              "assets/images/Rename_File_Logo.png",
+              context,
+              null,
+            ),
+
+            _buildMenuButton(
+              "Export File (Under Development)",
+              "assets/images/Export_File_Logo.png",
+              context,
+              null,
+            ),
+
+            _buildMenuButton(
+              "Setting (Under Development)",
+              "assets/images/Setting_Logo.png",
+              context,
+              null,
             ),
             SizedBox(height: 20),
             Spacer(),

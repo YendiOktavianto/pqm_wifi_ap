@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:app_settings/app_settings.dart';
+import '../../core/animations/page_transition.dart';
 import '../../services/wifi_service.dart';
 import '../../views/main_menu_page.dart';
 import 'welcome_top_section.dart';
@@ -29,9 +30,7 @@ class SecondWelcomeBody extends StatelessWidget {
                         await Future.delayed(const Duration(seconds: 1));
                         Navigator.pushReplacement(
                           context,
-                          MaterialPageRoute(
-                            builder: (_) => const MainMenuPage(),
-                          ),
+                          PageTransition.scaleFade(const MainMenuPage()),
                         );
                       } else {
                         AppSettings.openAppSettings(type: AppSettingsType.wifi);
