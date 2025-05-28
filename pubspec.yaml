@@ -58,6 +58,13 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
 
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/Logo_PQM_Resize.png"
+  adaptive_icon_foreground: "assets/images/Logo_PQM_Resize.png"
+  adaptive_icon_background: "#000000"
+
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
@@ -106,8 +113,3 @@ flutter:
     - assets/images/Rename_File_Logo.png
     - assets/images/Export_File_Logo.png
     - assets/images/Setting_Logo.png
-
-flutter_icons:
-  android: true
-  ios: true
-  image_path: "assets/images/Logo_PQM.png"

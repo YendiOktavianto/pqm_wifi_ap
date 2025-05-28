@@ -25,6 +25,7 @@ Timer? _timer;
 
 class _MeasurementPageState extends State<MeasurementPage> {
   bool isRecording = false;
+  bool hasNavigatedFromSW3 = false;
 
   String groundValue = "0.0";
   String groundStatus = "Fail";
@@ -38,6 +39,7 @@ class _MeasurementPageState extends State<MeasurementPage> {
   @override
   void initState() {
     super.initState();
+    hasNavigatedFromSW3 = false;
     _timer = Timer.periodic(Duration(seconds: 2), (timer) {
       fetchDataFromESP();
     });
@@ -96,6 +98,22 @@ class _MeasurementPageState extends State<MeasurementPage> {
             }
           }
         });
+
+        if (mode == 2 && !hasNavigatedFromSW3) {
+          hasNavigatedFromSW3 = true;
+          if (isRecording) {
+            setState(() {
+              isRecording = false;
+              _recordingData.stop();
+              _recordingData.reset();
+            });
+          }
+
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const MainMenuPage()),
+          );
+        }
 
         if (_recordingData.isRecording) {
           bool isConnected = receivedMode != 5;
@@ -212,9 +230,12 @@ class _MeasurementPageState extends State<MeasurementPage> {
                   }
 
                   Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("File saved to:\n$fullPath")),
-                  );
+                  Navigator.pop(context);
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("File saved to:\n$fullPath")),
+                    );
+                  }
                 } catch (e) {
                   ScaffoldMessenger.of(
                     context,
@@ -228,7 +249,7 @@ class _MeasurementPageState extends State<MeasurementPage> {
     );
   }
 
-  void saveAndThenNavigate(BuildContext context, Widget nextPage) {
+  void saveAndThenNavigate(BuildContext context, Widget? nextPage) {
     TextEditingController filenameController = TextEditingController();
 
     showDialog(
@@ -297,18 +318,22 @@ class _MeasurementPageState extends State<MeasurementPage> {
                     await http.get(
                       Uri.parse('http://192.168.4.1/mode?value=2'),
                     );
-                    await Future.delayed(
-                      const Duration(milliseconds: 300),
-                    );
+                    await Future.delayed(const Duration(milliseconds: 300));
                   } catch (e) {
                     print('[ERROR] Gagal mengatur mode ke 2: $e');
                   }
 
                   Navigator.pop(context);
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => nextPage),
-                  );
+                  if (nextPage != null && context.mounted) {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (_) => nextPage),
+                    );
+                  } else if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("File saved to:\n$fullPath")),
+                    );
+                  }
                 } catch (e) {
                   ScaffoldMessenger.of(
                     context,
@@ -325,6 +350,7 @@ class _MeasurementPageState extends State<MeasurementPage> {
   void _confirmStopRecording(
     VoidCallback onConfirmed, {
     Widget? navigateToAfterStop,
+    shouldSetMode2 = false,
   }) {
     showDialog(
       context: context,
@@ -379,7 +405,7 @@ class _MeasurementPageState extends State<MeasurementPage> {
                       ),
                     ),
                     child: const Text('Only Stop'),
-                    onPressed: () {
+                    onPressed: () async {
                       setState(() {
                         isRecording = false;
                         _recordingData.stop();
@@ -387,11 +413,16 @@ class _MeasurementPageState extends State<MeasurementPage> {
                       });
                       Navigator.of(context).pop();
 
+                      if (shouldSetMode2) {
+                        await setHardwareModeTo2();
+                      }
+
                       if (navigateToAfterStop != null) {
+                        if (!mounted) return;
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => navigateToAfterStop,
+                            builder: (_) => navigateToAfterStop!,
                           ),
                         );
                       }
@@ -415,10 +446,11 @@ class _MeasurementPageState extends State<MeasurementPage> {
                     child: const Text('Yes, Save and Stop'),
                     onPressed: () {
                       onConfirmed();
-                      saveAndThenNavigate(
-                        context,
-                        navigateToAfterStop ?? const MeasurementPage(),
-                      );
+                      if (navigateToAfterStop != null) {
+                        saveAndThenNavigate(context, navigateToAfterStop);
+                      } else {
+                        saveAndThenNavigate(context, null);
+                      }
                     },
                   ),
                 ),
@@ -472,7 +504,7 @@ class _MeasurementPageState extends State<MeasurementPage> {
                                 _recordingData.stop();
                                 // _recordingData.reset();
                               });
-                            });
+                            }, shouldSetMode2: false);
                           }
                         },
 
@@ -530,17 +562,20 @@ class _MeasurementPageState extends State<MeasurementPage> {
                     children: [
                       actionButton(context, 'BACK', () async {
                         if (isRecording) {
-                          _confirmStopRecording(() async {
-                            setState(() {
-                              isRecording = false;
-                              _recordingData.stop();
-                            });
-                            await setHardwareModeTo2();
-                            saveAndThenNavigate(
-                              context,
-                              const ConnectedDevicePage(),
-                            );
-                          }, navigateToAfterStop: const ConnectedDevicePage());
+                          _confirmStopRecording(
+                            () async {
+                              setState(() {
+                                isRecording = false;
+                                _recordingData.stop();
+                              });
+                              // saveAndThenNavigate(
+                              //   context,
+                              //   const ConnectedDevicePage(),
+                              // );
+                            },
+                            navigateToAfterStop: const ConnectedDevicePage(),
+                            shouldSetMode2: true,
+                          );
                         } else {
                           await setHardwareModeTo2();
                           Navigator.pushReplacement(
@@ -554,13 +589,20 @@ class _MeasurementPageState extends State<MeasurementPage> {
 
                       actionButton(context, 'MAIN MENU', () async {
                         if (isRecording) {
-                          _confirmStopRecording(() {
-                            setState(() {
-                              isRecording = false;
-                              _recordingData.stop();
-                            });
-                            saveAndThenNavigate(context, const MainMenuPage());
-                          }, navigateToAfterStop: const MainMenuPage());
+                          _confirmStopRecording(
+                            () {
+                              setState(() {
+                                isRecording = false;
+                                _recordingData.stop();
+                              });
+                              saveAndThenNavigate(
+                                context,
+                                const MainMenuPage(),
+                              );
+                            },
+                            navigateToAfterStop: const MainMenuPage(),
+                            shouldSetMode2: true,
+                          );
                         } else {
                           await setHardwareModeTo2();
                           Navigator.pushReplacement(
