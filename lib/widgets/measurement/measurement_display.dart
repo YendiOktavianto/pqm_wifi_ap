@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 class MeasurementDisplay extends StatelessWidget {
   final String groundValue;
+  final Color groundValueColor;
   final String groundStatus;
   final Color groundStatusColor;
   final String voltageValue;
@@ -10,6 +11,7 @@ class MeasurementDisplay extends StatelessWidget {
   const MeasurementDisplay({
     super.key,
     required this.groundValue,
+    required this.groundValueColor,
     required this.groundStatus,
     required this.groundStatusColor,
     required this.voltageValue,
@@ -59,7 +61,7 @@ class MeasurementDisplay extends StatelessWidget {
                   child: Text(
                     groundValue,
                     style: TextStyle(
-                      color: groundStatusColor,
+                      color: groundValueColor,
                       fontSize: groundValue.length > 10 ? 27 : 48,
                       fontWeight: FontWeight.bold,
                     ),

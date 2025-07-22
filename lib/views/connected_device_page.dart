@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'device_list_page.dart';
 import 'measurement_page.dart';
 import '../widgets/date_time_display.dart';
-import '../widgets/measurement_label.dart';
+import '../widgets/measurement/measurement_label.dart';
 import '../widgets/exit_app_button.dart';
 
 class ConnectedDevicePage extends StatelessWidget {

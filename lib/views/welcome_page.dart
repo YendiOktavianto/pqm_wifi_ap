@@ -4,6 +4,8 @@ import 'dart:async';
 import 'second_welcome_page.dart';
 
 class WelcomePage extends StatefulWidget {
+  const WelcomePage({super.key});
+
   @override
   _WelcomePageState createState() => _WelcomePageState();
 }

@@ -6,12 +6,11 @@ import 'package:excel/excel.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
 
-import 'connected_device_page.dart';
 import 'main_menu_page.dart';
 import '../widgets/date_time_display.dart';
 import '../widgets/device_info_column.dart';
 import '../widgets/exit_app_button.dart';
-import '../widgets/measurement_display.dart';
+import '../widgets/measurement/measurement_display.dart';
 import '../services/recording_data.dart';
 
 class MeasurementPage extends StatefulWidget {
@@ -21,15 +20,16 @@ class MeasurementPage extends StatefulWidget {
   State<MeasurementPage> createState() => _MeasurementPageState();
 }
 
-Timer? _timer;
-
 class _MeasurementPageState extends State<MeasurementPage> {
+  Timer? _timer;
+  bool isFetching = false;
   bool isRecording = false;
-  bool hasNavigatedFromSW3 = false;
+  bool isScanning = false;
 
   String groundValue = "0.0";
   String groundStatus = "Fail";
   Color groundStatusColor = Colors.red;
+  Color groundValueColor = Colors.white;
   String voltageValue = "0.0";
   String frequencyValue = "0.0";
   int mode = 2;
@@ -39,7 +39,6 @@ class _MeasurementPageState extends State<MeasurementPage> {
   @override
   void initState() {
     super.initState();
-    hasNavigatedFromSW3 = false;
     _timer = Timer.periodic(Duration(seconds: 2), (timer) {
       fetchDataFromESP();
     });
@@ -48,12 +47,15 @@ class _MeasurementPageState extends State<MeasurementPage> {
   @override
   void dispose() {
     _timer?.cancel();
+    _timer = null;
     _recordingData.stop();
     super.dispose();
   }
 
   Future<void> fetchDataFromESP() async {
-    if (!mounted) return;
+    if (!mounted || isFetching) return;
+    setState(() => isFetching = true);
+
     try {
       final response = await http.get(Uri.parse('http://192.168.4.1/'));
       if (response.statusCode == 200) {
@@ -82,6 +84,10 @@ class _MeasurementPageState extends State<MeasurementPage> {
             groundValue = "GROUND NOT CONNECTED";
             groundStatus = "Fail";
             groundStatusColor = Colors.red;
+            // voltageValue = "---";
+            // frequencyValue = "---";
+          } else if (mode == 2) {
+            groundValue = "--.--";
             voltageValue = "---";
             frequencyValue = "---";
           } else {
@@ -92,28 +98,14 @@ class _MeasurementPageState extends State<MeasurementPage> {
             if (ground > 1.0) {
               groundStatus = "Fail";
               groundStatusColor = Colors.red;
+              groundValueColor = Colors.red;
             } else {
               groundStatus = "Pass";
               groundStatusColor = Colors.green;
+              groundValueColor = Colors.green;
             }
           }
         });
-
-        if (mode == 2 && !hasNavigatedFromSW3) {
-          hasNavigatedFromSW3 = true;
-          if (isRecording) {
-            setState(() {
-              isRecording = false;
-              _recordingData.stop();
-              _recordingData.reset();
-            });
-          }
-
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const MainMenuPage()),
-          );
-        }
 
         if (_recordingData.isRecording) {
           bool isConnected = receivedMode != 5;
@@ -142,6 +134,36 @@ class _MeasurementPageState extends State<MeasurementPage> {
       }
     } catch (e) {
       print('Error fetching data: $e');
+    } finally {
+      if (mounted) setState(() => isFetching = false);
+    }
+  }
+
+  Future<void> startScanMode() async {
+    setState(() => isScanning = true);
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder:
+          (_) => AlertDialog(
+            content: Row(
+              children: const [
+                CircularProgressIndicator(),
+                SizedBox(width: 16),
+                Text("Scanning... Please wait"),
+              ],
+            ),
+          ),
+    );
+
+    try {
+      await http.get(Uri.parse('http://192.168.4.1/scan'));
+      await Future.delayed(const Duration(seconds: 4));
+    } catch (e) {
+      print("Failed to scan: $e");
+    } finally {
+      if (context.mounted) Navigator.pop(context);
+      setState(() => isScanning = false);
     }
   }
 
@@ -155,193 +177,139 @@ class _MeasurementPageState extends State<MeasurementPage> {
 
   Future<void> saveExcelToExternalStorage(BuildContext context) async {
     TextEditingController filenameController = TextEditingController();
+    bool isSaving = false;
 
-    showDialog(
+    await showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: const Text('Save File As'),
-          content: TextField(
-            controller: filenameController,
-            decoration: const InputDecoration(hintText: "Enter filename..."),
-          ),
-          actions: [
-            TextButton(
-              child: const Text('Cancel'),
-              onPressed: () {
-                _recordingData.reset();
-                Navigator.pop(context);
-              },
-            ),
-            ElevatedButton(
-              child: const Text('Save'),
-              onPressed: () async {
-                final filename = filenameController.text.trim();
-                if (filename.isEmpty) {
-                  return;
-                }
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Save File As'),
+              content: TextField(
+                controller: filenameController,
+                decoration: const InputDecoration(
+                  hintText: "Enter filename...",
+                ),
+                enabled: !isSaving,
+              ),
+              actions: [
+                TextButton(
+                  child: const Text('Cancel'),
+                  onPressed:
+                      isSaving
+                          ? null
+                          : () {
+                            Navigator.pop(context);
+                          },
+                ),
+                ElevatedButton(
+                  child:
+                      isSaving
+                          ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                          : const Text('Save'),
+                  onPressed:
+                      isSaving
+                          ? null
+                          : () async {
+                            final filename = filenameController.text.trim();
+                            if (filename.isEmpty) {
+                              // Bisa pakai error message
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text("Please enter a filename"),
+                                ),
+                              );
+                              return;
+                            }
 
-                var status = await Permission.manageExternalStorage.status;
-                if (!status.isGranted) {
-                  status = await Permission.manageExternalStorage.request();
-                  if (!status.isGranted) {
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Permission denied")),
-                    );
-                    return;
-                  }
-                }
+                            setState(() => isSaving = true);
 
-                try {
-                  final dir = Directory('/storage/emulated/0/Documents');
-                  if (!(await dir.exists())) {
-                    await dir.create(recursive: true);
-                  }
+                            var status =
+                                await Permission.manageExternalStorage.status;
+                            if (!status.isGranted) {
+                              status =
+                                  await Permission.manageExternalStorage
+                                      .request();
+                              if (!status.isGranted) {
+                                setState(() => isSaving = false);
+                                if (Navigator.canPop(context)) {
+                                  Navigator.pop(context);
+                                }
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text("Permission denied"),
+                                  ),
+                                );
+                                return;
+                              }
+                            }
 
-                  final fullPath = '${dir.path}/$filename.xlsx';
+                            try {
+                              final dir = Directory(
+                                '/storage/emulated/0/Documents',
+                              );
+                              if (!(await dir.exists())) {
+                                await dir.create(recursive: true);
+                              }
 
-                  final excel = Excel.createExcel();
-                  final sheet = excel['Sheet1'];
-                  sheet.appendRow([
-                    'Time',
-                    'Ground',
-                    'Voltage',
-                    'Frequency',
-                    'Status',
-                  ]);
-                  for (var row in _recordingData.records) {
-                    sheet.appendRow([
-                      row['time'],
-                      row['ground'],
-                      row['voltage'],
-                      row['frequency'],
-                      row['status'],
-                    ]);
-                  }
+                              final fullPath = '${dir.path}/$filename.xlsx';
 
-                  final bytes = excel.encode();
-                  if (bytes != null) {
-                    final file = File(fullPath);
-                    await file.create(recursive: true);
-                    await file.writeAsBytes(bytes);
+                              final excel = Excel.createExcel();
+                              final sheet = excel['Sheet1'];
+                              sheet.appendRow([
+                                'Time',
+                                'Ground',
+                                'Voltage',
+                                'Frequency',
+                                'Status',
+                              ]);
+                              for (var row in _recordingData.records) {
+                                sheet.appendRow([
+                                  row['time'],
+                                  row['ground'],
+                                  row['voltage'],
+                                  row['frequency'],
+                                  row['status'],
+                                ]);
+                              }
 
-                    _recordingData.reset();
-                  }
+                              final bytes = excel.encode();
+                              if (bytes != null) {
+                                final file = File(fullPath);
+                                await file.create(recursive: true);
+                                await file.writeAsBytes(bytes);
+                              }
 
-                  Navigator.pop(context);
-                  Navigator.pop(context);
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("File saved to:\n$fullPath")),
-                    );
-                  }
-                } catch (e) {
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(SnackBar(content: Text("Failed to save: $e")));
-                }
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
+                              if (Navigator.canPop(context)) {
+                                Navigator.pop(context); // Tutup dialog!
+                              }
 
-  void saveAndThenNavigate(BuildContext context, Widget? nextPage) {
-    TextEditingController filenameController = TextEditingController();
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text("File saved to:\n$fullPath"),
+                                  ),
+                                );
+                              }
 
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Save File As'),
-          content: TextField(
-            controller: filenameController,
-            decoration: const InputDecoration(hintText: "Enter filename..."),
-          ),
-          actions: [
-            ElevatedButton(
-              child: const Text('Save'),
-              onPressed: () async {
-                final filename = filenameController.text.trim();
-                if (filename.isEmpty) return;
-
-                var status = await Permission.manageExternalStorage.status;
-                if (!status.isGranted) {
-                  status = await Permission.manageExternalStorage.request();
-                  if (!status.isGranted) {
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Permission denied")),
-                    );
-                    return;
-                  }
-                }
-
-                try {
-                  final dir = Directory('/storage/emulated/0/Documents');
-                  if (!(await dir.exists())) {
-                    await dir.create(recursive: true);
-                  }
-
-                  final fullPath = '${dir.path}/$filename.xlsx';
-                  final excel = Excel.createExcel();
-                  final sheet = excel['Sheet1'];
-                  sheet.appendRow([
-                    'Time',
-                    'Ground',
-                    'Voltage',
-                    'Frequency',
-                    'Status',
-                  ]);
-                  for (var row in _recordingData.records) {
-                    sheet.appendRow([
-                      row['time'],
-                      row['ground'],
-                      row['voltage'],
-                      row['frequency'],
-                      row['status'],
-                    ]);
-                  }
-
-                  final bytes = excel.encode();
-                  if (bytes != null) {
-                    final file = File(fullPath);
-                    await file.create(recursive: true);
-                    await file.writeAsBytes(bytes);
-                    _recordingData.reset();
-                  }
-
-                  try {
-                    await http.get(
-                      Uri.parse('http://192.168.4.1/mode?value=2'),
-                    );
-                    await Future.delayed(const Duration(milliseconds: 300));
-                  } catch (e) {
-                    print('[ERROR] Gagal mengatur mode ke 2: $e');
-                  }
-
-                  Navigator.pop(context);
-                  if (nextPage != null && context.mounted) {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (_) => nextPage),
-                    );
-                  } else if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("File saved to:\n$fullPath")),
-                    );
-                  }
-                } catch (e) {
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(SnackBar(content: Text("Failed to save: $e")));
-                }
-              },
-            ),
-          ],
+                              _recordingData
+                                  .reset(); // RESET DATA di akhir, setelah file sukses!
+                            } catch (e) {
+                              setState(() => isSaving = false);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text("Failed to save: $e")),
+                              );
+                            }
+                          },
+                ),
+              ],
+            );
+          },
         );
       },
     );
@@ -422,7 +390,7 @@ class _MeasurementPageState extends State<MeasurementPage> {
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => navigateToAfterStop!,
+                            builder: (_) => navigateToAfterStop,
                           ),
                         );
                       }
@@ -443,14 +411,14 @@ class _MeasurementPageState extends State<MeasurementPage> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Text('Yes, Save and Stop'),
-                    onPressed: () {
-                      onConfirmed();
-                      if (navigateToAfterStop != null) {
-                        saveAndThenNavigate(context, navigateToAfterStop);
-                      } else {
-                        saveAndThenNavigate(context, null);
-                      }
+                    child: const Text('Save Data'),
+                    onPressed: () async {
+                      setState(() {
+                        isRecording = false;
+                        _recordingData.stop();
+                      });
+                      Navigator.of(context).pop();
+                      await saveExcelToExternalStorage(context);
                     },
                   ),
                 ),
@@ -483,71 +451,152 @@ class _MeasurementPageState extends State<MeasurementPage> {
                     const SizedBox(height: 20),
                     MeasurementDisplay(
                       groundValue: groundValue,
-                      groundStatus: groundStatus,
-                      groundStatusColor: groundStatusColor,
+                      groundStatus: mode == 2 ? '' : groundStatus,
+                      groundStatusColor:
+                          mode == 2 ? Colors.transparent : groundStatusColor,
+                      groundValueColor: groundValueColor,
                       voltageValue: voltageValue,
                       frequencyValue: frequencyValue,
                     ),
                     const SizedBox(height: 20),
-                    Center(
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          if (!isRecording) {
-                            setState(() {
-                              isRecording = true;
-                              _recordingData.start();
-                            });
-                          } else {
-                            _confirmStopRecording(() {
-                              setState(() {
-                                isRecording = false;
-                                _recordingData.stop();
-                                // _recordingData.reset();
-                              });
-                            }, shouldSetMode2: false);
-                          }
-                        },
 
-                        icon: Icon(
-                          isRecording
-                              ? Icons.stop_circle
-                              : Icons.fiber_manual_record,
-                          color: Colors.white,
-                        ),
-                        label: Text(
-                          isRecording ? 'Stop Recording Data' : 'Record Data',
-                          style: const TextStyle(color: Colors.white),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              isRecording ? Colors.red : Colors.green,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 12,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          minimumSize: Size.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                      ),
-                    ),
-                    if (isRecording)
-                      AnimatedBuilder(
-                        animation: _recordingData,
-                        builder: (context, _) {
-                          return Text(
-                            _recordingData.formattedTime,
-                            style: const TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white70,
+                    if (mode == 2) ...[
+                      Center(
+                        child: ElevatedButton(
+                          onPressed: isScanning ? null : startScanMode,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 12,
                             ),
-                            textAlign: TextAlign.center,
-                          );
-                        },
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          child: const Text(
+                            "SCAN",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
                       ),
+                    ] else if (mode == 4 || mode == 5) ...[
+                      Row(
+                        children: [
+                          if (!isRecording)
+                            Expanded(
+                              child: Align(
+                                alignment: Alignment.center,
+                                child: ElevatedButton(
+                                  onPressed: () async {
+                                    await setHardwareModeTo2();
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.red,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 20,
+                                      vertical: 12,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(30),
+                                    ),
+                                    minimumSize: Size.zero,
+                                    tapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                  ),
+                                  child: const Text(
+                                    "RESET",
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                          Expanded(
+                            child: Align(
+                              alignment: Alignment.center,
+                              child: SizedBox(
+                                width:
+                                    MediaQuery.of(context).size.width / 2 - 24,
+
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    ElevatedButton.icon(
+                                      onPressed: () {
+                                        if (!isRecording) {
+                                          setState(() {
+                                            isRecording = true;
+                                            _recordingData.start();
+                                          });
+                                        } else {
+                                          _confirmStopRecording(() {
+                                            setState(() {
+                                              isRecording = false;
+                                              _recordingData.stop();
+                                            });
+                                          }, shouldSetMode2: false);
+                                        }
+                                      },
+                                      icon: Icon(
+                                        isRecording
+                                            ? Icons.stop_circle
+                                            : Icons.fiber_manual_record,
+                                        color: Colors.white,
+                                      ),
+                                      label: Text(
+                                        isRecording
+                                            ? 'Stop Recording Data'
+                                            : 'Record Data',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor:
+                                            isRecording
+                                                ? Colors.red
+                                                : Colors.green,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 20,
+                                          vertical: 12,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            30,
+                                          ),
+                                        ),
+                                        minimumSize: Size.zero,
+                                        tapTargetSize:
+                                            MaterialTapTargetSize.shrinkWrap,
+                                      ),
+                                    ),
+                                    if (isRecording) const SizedBox(height: 8),
+                                    if (isRecording)
+                                      AnimatedBuilder(
+                                        animation: _recordingData,
+                                        builder: (context, _) {
+                                          return Text(
+                                            _recordingData.formattedTime,
+                                            style: const TextStyle(
+                                              fontSize: 28,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white70,
+                                            ),
+                                            textAlign: TextAlign.center,
+                                          );
+                                        },
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -560,7 +609,7 @@ class _MeasurementPageState extends State<MeasurementPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      actionButton(context, 'BACK', () async {
+                      actionButton(context, 'BACK TO MAIN MENU', () async {
                         if (isRecording) {
                           _confirmStopRecording(
                             () async {
@@ -568,37 +617,6 @@ class _MeasurementPageState extends State<MeasurementPage> {
                                 isRecording = false;
                                 _recordingData.stop();
                               });
-                              // saveAndThenNavigate(
-                              //   context,
-                              //   const ConnectedDevicePage(),
-                              // );
-                            },
-                            navigateToAfterStop: const ConnectedDevicePage(),
-                            shouldSetMode2: true,
-                          );
-                        } else {
-                          await setHardwareModeTo2();
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const ConnectedDevicePage(),
-                            ),
-                          );
-                        }
-                      }),
-
-                      actionButton(context, 'MAIN MENU', () async {
-                        if (isRecording) {
-                          _confirmStopRecording(
-                            () {
-                              setState(() {
-                                isRecording = false;
-                                _recordingData.stop();
-                              });
-                              saveAndThenNavigate(
-                                context,
-                                const MainMenuPage(),
-                              );
                             },
                             navigateToAfterStop: const MainMenuPage(),
                             shouldSetMode2: true,
@@ -607,9 +625,7 @@ class _MeasurementPageState extends State<MeasurementPage> {
                           await setHardwareModeTo2();
                           Navigator.pushReplacement(
                             context,
-                            MaterialPageRoute(
-                              builder: (context) => const MainMenuPage(),
-                            ),
+                            MaterialPageRoute(builder: (_) => MainMenuPage()),
                           );
                         }
                       }),

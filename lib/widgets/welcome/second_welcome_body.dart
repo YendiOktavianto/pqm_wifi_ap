@@ -28,44 +28,14 @@ class SecondWelcomeBody extends StatelessWidget {
                     onConnect: () async {
                       final connected = await WifiService.isConnectedToESP();
                       if (connected) {
-                        try {
-                          final response = await http
-                              .get(Uri.parse("http://192.168.4.1/status"))
-                              .timeout(const Duration(seconds: 3));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Connected to PQM WIFI")),
+                        );
 
-                          if (response.statusCode == 200) {
-                            final data = jsonDecode(response.body);
-                            final mode = data["mode"];
-
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text("Connected to PQM (mode: $mode)"),
-                              ),
-                            );
-
-                            await Future.delayed(const Duration(seconds: 1));
-
-                            if (mode == 4) {
-                              Navigator.pushReplacement(
-                                context,
-                                PageTransition.scaleFade(
-                                  const MeasurementPage(),
-                                ),
-                              );
-                            } else {
-                              Navigator.pushReplacement(
-                                context,
-                                PageTransition.scaleFade(const MainMenuPage()),
-                              );
-                            }
-                          } else {
-                            throw Exception("Invalid response from device");
-                          }
-                        } catch (e) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text("Error reading status: $e")),
-                          );
-                        }
+                        Navigator.pushReplacement(
+                          context,
+                          PageTransition.scaleFade(const MainMenuPage()),
+                        );
                       } else {
                         AppSettings.openAppSettings(type: AppSettingsType.wifi);
                         ScaffoldMessenger.of(context).showSnackBar(

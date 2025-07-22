@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'device_list_page.dart';
+import 'package:http/http.dart' as http;
+import 'measurement_page.dart';
 import 'second_welcome_page.dart';
 import '../widgets/date_time_display.dart';
 import '../widgets/exit_app_button.dart';
@@ -25,7 +26,17 @@ class MainMenuPage extends StatelessWidget {
               "Voltage & Ground Measurement",
               "assets/images/Voltage_Ground_Measurement_Logo.png",
               context,
-              DeviceListPage(),
+              MeasurementPage(),
+              onTap: () async {
+                if (context.mounted) {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const MeasurementPage(),
+                    ),
+                  );
+                }
+              },
             ),
             _buildMenuButton(
               "Open File",
