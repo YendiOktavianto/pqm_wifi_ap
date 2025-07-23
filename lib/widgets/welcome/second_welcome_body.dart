@@ -1,15 +1,10 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:app_settings/app_settings.dart';
-import 'package:http/http.dart' as http;
-import '../../core/animations/page_transition.dart';
 import '../../services/wifi_service.dart';
 import '../../views/main_menu_page.dart';
 import 'welcome_top_section.dart';
 import 'welcome_bottom_section.dart';
 import '../exit_app_button.dart';
-import '../../views/measurement_page.dart';
 
 class SecondWelcomeBody extends StatelessWidget {
   const SecondWelcomeBody({super.key});
@@ -32,9 +27,32 @@ class SecondWelcomeBody extends StatelessWidget {
                           SnackBar(content: Text("Connected to PQM WIFI")),
                         );
 
-                        Navigator.pushReplacement(
+                        Navigator.push(
                           context,
-                          PageTransition.scaleFade(const MainMenuPage()),
+                          PageRouteBuilder(
+                            pageBuilder:
+                                (context, animation, secondaryAnimation) =>
+                                    MainMenuPage(),
+                            transitionsBuilder: (
+                              context,
+                              animation,
+                              secondaryAnimation,
+                              child,
+                            ) {
+                              const begin = Offset(1.0, 0.0);
+                              const end = Offset.zero;
+                              const curve = Curves.ease;
+
+                              var tween = Tween(
+                                begin: begin,
+                                end: end,
+                              ).chain(CurveTween(curve: curve));
+                              return SlideTransition(
+                                position: animation.drive(tween),
+                                child: child,
+                              );
+                            },
+                          ),
                         );
                       } else {
                         AppSettings.openAppSettings(type: AppSettingsType.wifi);

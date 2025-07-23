@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'measurement_page.dart';
 import 'second_welcome_page.dart';
 import '../widgets/date_time_display.dart';
@@ -28,14 +27,13 @@ class MainMenuPage extends StatelessWidget {
               context,
               MeasurementPage(),
               onTap: () async {
-                if (context.mounted) {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const MeasurementPage(),
-                    ),
-                  );
-                }
+                Navigator.pushReplacement(
+                  context,
+                  createSlideRoute(
+                    const MeasurementPage(),
+                    beginOffset: const Offset(1.0, 0.0), // slide kanan
+                  ),
+                );
               },
             ),
             _buildMenuButton(
@@ -84,6 +82,7 @@ class MainMenuPage extends StatelessWidget {
                   Colors.teal,
                   context,
                   SecondWelcomePage(),
+                  beginOffset: const Offset(-1.0, 0.0),
                 ),
               ],
             ),
@@ -93,6 +92,25 @@ class MainMenuPage extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  PageRouteBuilder createSlideRoute(
+    Widget page, {
+    required Offset beginOffset,
+  }) {
+    return PageRouteBuilder(
+      pageBuilder: (context, animation, secondaryAnimation) => page,
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        const end = Offset.zero;
+        const curve = Curves.ease;
+
+        final tween = Tween(
+          begin: beginOffset,
+          end: end,
+        ).chain(CurveTween(curve: curve));
+        return SlideTransition(position: animation.drive(tween), child: child);
+      },
     );
   }
 
@@ -138,14 +156,15 @@ class MainMenuPage extends StatelessWidget {
     String title,
     Color color,
     BuildContext context,
-    Widget? page,
-  ) {
+    Widget? page, {
+    required Offset beginOffset,
+  }) {
     return ElevatedButton(
       onPressed: () {
         if (page != null) {
-          Navigator.push(
+          Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => page),
+            createSlideRoute(page, beginOffset: beginOffset),
           );
         }
       },

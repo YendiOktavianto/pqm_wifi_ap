@@ -26,12 +26,12 @@ class _MeasurementPageState extends State<MeasurementPage> {
   bool isRecording = false;
   bool isScanning = false;
 
-  String groundValue = "0.0";
+  String? groundValue;
   String groundStatus = "Fail";
   Color groundStatusColor = Colors.red;
   Color groundValueColor = Colors.white;
-  String voltageValue = "0.0";
-  String frequencyValue = "0.0";
+  String? voltageValue;
+  String? frequencyValue;
   int mode = 2;
 
   final RecordingData _recordingData = RecordingData();
@@ -39,6 +39,7 @@ class _MeasurementPageState extends State<MeasurementPage> {
   @override
   void initState() {
     super.initState();
+    fetchDataFromESP();
     _timer = Timer.periodic(Duration(seconds: 2), (timer) {
       fetchDataFromESP();
     });
@@ -110,9 +111,9 @@ class _MeasurementPageState extends State<MeasurementPage> {
         if (_recordingData.isRecording) {
           bool isConnected = receivedMode != 5;
 
-          double groundParsed = double.tryParse(groundValue) ?? 0.0;
-          int voltageParsed = int.tryParse(voltageValue) ?? 0;
-          int frequencyParsed = int.tryParse(frequencyValue) ?? 0;
+          double groundParsed = double.tryParse(groundValue ?? '') ?? 0.0;
+          int voltageParsed = int.tryParse(voltageValue ?? '') ?? 0;
+          int frequencyParsed = int.tryParse(frequencyValue ?? '') ?? 0;
 
           // print('RECORDING:');
           // print('  ground: $groundParsed');

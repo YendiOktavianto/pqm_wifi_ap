@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 
 class MeasurementDisplay extends StatelessWidget {
-  final String groundValue;
+  final String? groundValue;
   final Color groundValueColor;
   final String groundStatus;
   final Color groundStatusColor;
-  final String voltageValue;
-  final String frequencyValue;
+  final String? voltageValue;
+  final String? frequencyValue;
 
   const MeasurementDisplay({
     super.key,
-    required this.groundValue,
+    this.groundValue,
     required this.groundValueColor,
     required this.groundStatus,
     required this.groundStatusColor,
-    required this.voltageValue,
-    required this.frequencyValue,
+    this.voltageValue,
+    this.frequencyValue,
   });
 
   @override
@@ -59,10 +59,10 @@ class MeasurementDisplay extends StatelessWidget {
                 // Value
                 Center(
                   child: Text(
-                    groundValue,
+                    groundValue ?? '',
                     style: TextStyle(
                       color: groundValueColor,
-                      fontSize: groundValue.length > 10 ? 27 : 48,
+                      fontSize: (groundValue?.length ?? 0) > 10 ? 27 : 48,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -95,7 +95,7 @@ class MeasurementDisplay extends StatelessWidget {
     );
   }
 
-  Widget _smallMeasurementCard({required String label, required String value}) {
+  Widget _smallMeasurementCard({required String label, final String? value}) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -112,7 +112,7 @@ class MeasurementDisplay extends StatelessWidget {
           const SizedBox(height: 8),
           Center(
             child: Text(
-              value,
+              value ?? '',
               style: const TextStyle(
                 fontSize: 48,
                 fontWeight: FontWeight.bold,
