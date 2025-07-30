@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../widgets/date_time_display.dart';
+import '../widgets/measurement/date_time_display.dart';
 import '../widgets/exit_app_button.dart';
 import '../widgets/menu/menu_button.dart';
 import '../widgets/menu/action_button.dart';
@@ -47,16 +47,6 @@ class MainMenuPage extends StatelessWidget {
             MenuButton(
               title: "Rename File (Under Development)",
               iconPath: "assets/images/Rename_File_Logo.png",
-              onTap: () {},
-            ),
-            MenuButton(
-              title: "Export File (Under Development)",
-              iconPath: "assets/images/Export_File_Logo.png",
-              onTap: () {},
-            ),
-            MenuButton(
-              title: "Setting (Under Development)",
-              iconPath: "assets/images/Setting_Logo.png",
               onTap: () {},
             ),
 

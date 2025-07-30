@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pqm_app/views/main_menu_page.dart';
-import '../widgets/date_time_display.dart';
-import '../widgets/device_info_column.dart';
+import '../widgets/measurement/date_time_display.dart';
+import '../widgets/measurement/device_info_column.dart';
 import '../widgets/exit_app_button.dart';
 
 class RenameFilePage extends StatelessWidget {

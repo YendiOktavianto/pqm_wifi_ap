@@ -11,4 +11,8 @@ class WifiService {
       return false;
     }
   }
+
+  static Future<void> triggerScan() async {
+    await http.get(Uri.parse('http://192.168.4.1/scan'));
+  }
 }

@@ -39,20 +39,22 @@ class MeasurementDisplay extends StatelessWidget {
                       'Ground Measurement (V)',
                       style: TextStyle(color: Colors.white),
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: groundStatusColor,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        groundStatus,
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    ),
+                    groundStatus.isNotEmpty
+                        ? Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: groundStatusColor,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            groundStatus,
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        )
+                        : const SizedBox.shrink(),
                   ],
                 ),
                 const SizedBox(height: 10),

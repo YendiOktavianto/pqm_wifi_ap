@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'main_menu_page.dart';
 import 'connected_device_page.dart';
-import '../widgets/date_time_display.dart';
+import '../widgets/measurement/date_time_display.dart';
 import '../widgets/exit_app_button.dart';
 import '../widgets/measurement/measurement_label.dart';
 

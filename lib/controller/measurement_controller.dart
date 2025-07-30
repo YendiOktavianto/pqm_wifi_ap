@@ -1,0 +1,90 @@
+import 'dart:async';
+import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import '../models/measurement_data.dart';
+
+class MeasurementController with ChangeNotifier {
+  MeasurementData? data;
+
+  bool isFetching = false;
+  bool isRecording = false;
+  bool isScanning = false;
+
+  // Ground status info
+  String groundStatus = "";
+  Color groundStatusColor = Colors.red;
+  Color groundValueColor = Colors.white;
+
+  Timer? _timer;
+
+  void startPolling() {
+    _timer = Timer.periodic(const Duration(seconds: 2), (_) {
+      fetchData();
+    });
+  }
+
+  void stopPolling() {
+    _timer?.cancel();
+    _timer = null;
+  }
+
+  Future<void> fetchData() async {
+    if (isFetching) return;
+    isFetching = true;
+
+    try {
+      final response = await http.get(Uri.parse('http://192.168.4.1/'));
+      if (response.statusCode == 200) {
+        final decoded = json.decode(response.body);
+        final newData = MeasurementData.fromJson(decoded);
+
+        data = newData;
+        updateStatus(newData);
+
+        notifyListeners();
+      }
+    } catch (e) {
+      print("Error fetching data: $e");
+    }
+
+    isFetching = false;
+  }
+
+  void updateStatus(MeasurementData newData) {
+    if (newData.mode == 2) {
+      groundStatus = "";
+      groundStatusColor = Colors.transparent;
+      groundValueColor = Colors.white;
+    } else if (newData.mode == 5) {
+      groundStatus = "Fail";
+      groundStatusColor = Colors.red;
+      groundValueColor = Colors.white;
+    } else {
+      if (newData.ground > 1.0) {
+        groundStatus = "Fail";
+        groundStatusColor = Colors.red;
+        groundValueColor = Colors.red;
+      } else {
+        groundStatus = "Pass";
+        groundStatusColor = Colors.green;
+        groundValueColor = Colors.green;
+      }
+    }
+  }
+
+  void resetDataState() {
+    data = null;
+    groundStatus = "";
+    groundStatusColor = Colors.transparent;
+    groundValueColor = Colors.white;
+  }
+
+  Future<void> setHardwareModeTo2() async {
+    try {
+      await http.get(Uri.parse('http://192.168.4.1/mode?value=2'));
+    } catch (e) {
+      debugPrint('Failed to set mode to 2: $e');
+    }
+  }
+}

@@ -1,17 +1,15 @@
 import 'package:flutter/material.dart';
-import 'dart:async';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:excel/excel.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'dart:io';
+import 'package:provider/provider.dart';
 
 import 'main_menu_page.dart';
-import '../widgets/date_time_display.dart';
-import '../widgets/device_info_column.dart';
+import '../widgets/measurement/date_time_display.dart';
+import '../widgets/measurement/device_info_column.dart';
 import '../widgets/exit_app_button.dart';
 import '../widgets/measurement/measurement_display.dart';
 import '../services/recording_data.dart';
+import '../controller/measurement_controller.dart';
+import '../services/scan_services.dart';
+import '../services/save_file_service.dart';
 
 class MeasurementPage extends StatefulWidget {
   const MeasurementPage({super.key});
@@ -21,299 +19,30 @@ class MeasurementPage extends StatefulWidget {
 }
 
 class _MeasurementPageState extends State<MeasurementPage> {
-  Timer? _timer;
-  bool isFetching = false;
-  bool isRecording = false;
-  bool isScanning = false;
-
-  String? groundValue;
-  String groundStatus = "Fail";
-  Color groundStatusColor = Colors.red;
-  Color groundValueColor = Colors.white;
-  String? voltageValue;
-  String? frequencyValue;
-  int mode = 2;
-
   final RecordingData _recordingData = RecordingData();
+  bool isScanning = false;
+  bool isRecording = false;
+  late MeasurementController controller;
 
   @override
   void initState() {
     super.initState();
-    fetchDataFromESP();
-    _timer = Timer.periodic(Duration(seconds: 2), (timer) {
-      fetchDataFromESP();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      controller.startPolling();
     });
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    controller = context.read<MeasurementController>();
+  }
+
+  @override
   void dispose() {
-    _timer?.cancel();
-    _timer = null;
-    _recordingData.stop();
+    controller.stopPolling();
     super.dispose();
-  }
-
-  Future<void> fetchDataFromESP() async {
-    if (!mounted || isFetching) return;
-    setState(() => isFetching = true);
-
-    try {
-      final response = await http.get(Uri.parse('http://192.168.4.1/'));
-      if (response.statusCode == 200) {
-        // print('RESPONSE: ${response.body}');
-        final data = json.decode(response.body);
-        num ground = (data['ground'] ?? 0.0);
-        num voltage = (data['voltage'] ?? 0);
-        num frequency = (data['frequency'] ?? 0);
-        int receivedMode = data['mode'] ?? 0;
-
-        if (!mounted) return;
-
-        setState(() {
-          groundValue = ground.toStringAsFixed(1);
-          voltageValue = voltage.toString();
-          frequencyValue = frequency.toString();
-          mode = receivedMode;
-
-          // print('Formatted values:');
-          // print('  groundValue: $groundValue');
-          // print('  voltageValue: $voltageValue');
-          // print('  frequencyValue: $frequencyValue');
-          // print('  mode: $mode');
-
-          if (mode == 5) {
-            groundValue = "GROUND NOT CONNECTED";
-            groundStatus = "Fail";
-            groundStatusColor = Colors.red;
-            // voltageValue = "---";
-            // frequencyValue = "---";
-          } else if (mode == 2) {
-            groundValue = "--.--";
-            voltageValue = "---";
-            frequencyValue = "---";
-          } else {
-            groundValue = ground.toStringAsFixed(1);
-            voltageValue = voltage.toString();
-            frequencyValue = frequency.toString();
-
-            if (ground > 1.0) {
-              groundStatus = "Fail";
-              groundStatusColor = Colors.red;
-              groundValueColor = Colors.red;
-            } else {
-              groundStatus = "Pass";
-              groundStatusColor = Colors.green;
-              groundValueColor = Colors.green;
-            }
-          }
-        });
-
-        if (_recordingData.isRecording) {
-          bool isConnected = receivedMode != 5;
-
-          double groundParsed = double.tryParse(groundValue ?? '') ?? 0.0;
-          int voltageParsed = int.tryParse(voltageValue ?? '') ?? 0;
-          int frequencyParsed = int.tryParse(frequencyValue ?? '') ?? 0;
-
-          // print('RECORDING:');
-          // print('  ground: $groundParsed');
-          // print('  voltage: $voltageParsed');
-          // print('  frequency: $frequencyParsed');
-          // print(
-          //   '  status: ${isConnected ? "Ground Connected" : "Ground Not Connected"}',
-          // );
-
-          _recordingData.addRecord(
-            ground: isConnected ? groundParsed : 0.0,
-            voltage: isConnected ? voltageParsed : 0,
-            frequency: isConnected ? frequencyParsed : 0,
-            groundConnected: isConnected,
-          );
-        }
-      } else {
-        print('Failed to fetch data: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Error fetching data: $e');
-    } finally {
-      if (mounted) setState(() => isFetching = false);
-    }
-  }
-
-  Future<void> startScanMode() async {
-    setState(() => isScanning = true);
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder:
-          (_) => AlertDialog(
-            content: Row(
-              children: const [
-                CircularProgressIndicator(),
-                SizedBox(width: 16),
-                Text("Scanning... Please wait"),
-              ],
-            ),
-          ),
-    );
-
-    try {
-      await http.get(Uri.parse('http://192.168.4.1/scan'));
-      await Future.delayed(const Duration(seconds: 4));
-    } catch (e) {
-      print("Failed to scan: $e");
-    } finally {
-      if (context.mounted) Navigator.pop(context);
-      setState(() => isScanning = false);
-    }
-  }
-
-  Future<void> setHardwareModeTo2() async {
-    try {
-      await http.get(Uri.parse('http://192.168.4.1/mode?value=2'));
-    } catch (e) {
-      print('Failed set mode to 2: $e');
-    }
-  }
-
-  Future<void> saveExcelToExternalStorage(BuildContext context) async {
-    TextEditingController filenameController = TextEditingController();
-    bool isSaving = false;
-
-    await showDialog(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              title: const Text('Save File As'),
-              content: TextField(
-                controller: filenameController,
-                decoration: const InputDecoration(
-                  hintText: "Enter filename...",
-                ),
-                enabled: !isSaving,
-              ),
-              actions: [
-                TextButton(
-                  child: const Text('Cancel'),
-                  onPressed:
-                      isSaving
-                          ? null
-                          : () {
-                            Navigator.pop(context);
-                          },
-                ),
-                ElevatedButton(
-                  child:
-                      isSaving
-                          ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                          : const Text('Save'),
-                  onPressed:
-                      isSaving
-                          ? null
-                          : () async {
-                            final filename = filenameController.text.trim();
-                            if (filename.isEmpty) {
-                              // Bisa pakai error message
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text("Please enter a filename"),
-                                ),
-                              );
-                              return;
-                            }
-
-                            setState(() => isSaving = true);
-
-                            var status =
-                                await Permission.manageExternalStorage.status;
-                            if (!status.isGranted) {
-                              status =
-                                  await Permission.manageExternalStorage
-                                      .request();
-                              if (!status.isGranted) {
-                                setState(() => isSaving = false);
-                                if (Navigator.canPop(context)) {
-                                  Navigator.pop(context);
-                                }
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text("Permission denied"),
-                                  ),
-                                );
-                                return;
-                              }
-                            }
-
-                            try {
-                              final dir = Directory(
-                                '/storage/emulated/0/Documents',
-                              );
-                              if (!(await dir.exists())) {
-                                await dir.create(recursive: true);
-                              }
-
-                              final fullPath = '${dir.path}/$filename.xlsx';
-
-                              final excel = Excel.createExcel();
-                              final sheet = excel['Sheet1'];
-                              sheet.appendRow([
-                                'Time',
-                                'Ground',
-                                'Voltage',
-                                'Frequency',
-                                'Status',
-                              ]);
-                              for (var row in _recordingData.records) {
-                                sheet.appendRow([
-                                  row['time'],
-                                  row['ground'],
-                                  row['voltage'],
-                                  row['frequency'],
-                                  row['status'],
-                                ]);
-                              }
-
-                              final bytes = excel.encode();
-                              if (bytes != null) {
-                                final file = File(fullPath);
-                                await file.create(recursive: true);
-                                await file.writeAsBytes(bytes);
-                              }
-
-                              if (Navigator.canPop(context)) {
-                                Navigator.pop(context); // Tutup dialog!
-                              }
-
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text("File saved to:\n$fullPath"),
-                                  ),
-                                );
-                              }
-
-                              _recordingData
-                                  .reset(); // RESET DATA di akhir, setelah file sukses!
-                            } catch (e) {
-                              setState(() => isSaving = false);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text("Failed to save: $e")),
-                              );
-                            }
-                          },
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
   }
 
   void _confirmStopRecording(
@@ -383,7 +112,9 @@ class _MeasurementPageState extends State<MeasurementPage> {
                       Navigator.of(context).pop();
 
                       if (shouldSetMode2) {
-                        await setHardwareModeTo2();
+                        await context
+                            .read<MeasurementController>()
+                            .setHardwareModeTo2();
                       }
 
                       if (navigateToAfterStop != null) {
@@ -414,12 +145,11 @@ class _MeasurementPageState extends State<MeasurementPage> {
                     ),
                     child: const Text('Save Data'),
                     onPressed: () async {
-                      setState(() {
-                        isRecording = false;
-                        _recordingData.stop();
-                      });
-                      Navigator.of(context).pop();
-                      await saveExcelToExternalStorage(context);
+                      await ExcelExportService.saveExcelToExternalStorage(
+                        context: context,
+                        records: _recordingData.records,
+                        onReset: () => _recordingData.reset(),
+                      );
                     },
                   ),
                 ),
@@ -433,6 +163,19 @@ class _MeasurementPageState extends State<MeasurementPage> {
 
   @override
   Widget build(BuildContext context) {
+    final controller = context.watch<MeasurementController>();
+    final data = controller.data;
+    final mode = data?.mode ?? 2;
+    final groundValue =
+        mode == 2 ? "--.--" : (data?.ground ?? 0.0).toStringAsFixed(1);
+    final voltageValue =
+        mode == 2 ? "---" : (data?.voltage ?? 0.0).toStringAsFixed(0);
+    final frequencyValue =
+        mode == 2 ? "---" : (data?.frequency ?? 0.0).toStringAsFixed(0);
+    final groundStatus = controller.groundStatus;
+    final groundStatusColor = controller.groundStatusColor;
+    final groundValueColor = controller.groundValueColor;
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(
@@ -452,19 +195,32 @@ class _MeasurementPageState extends State<MeasurementPage> {
                     const SizedBox(height: 20),
                     MeasurementDisplay(
                       groundValue: groundValue,
-                      groundStatus: mode == 2 ? '' : groundStatus,
-                      groundStatusColor:
-                          mode == 2 ? Colors.transparent : groundStatusColor,
-                      groundValueColor: groundValueColor,
                       voltageValue: voltageValue,
                       frequencyValue: frequencyValue,
+                      groundStatus: groundStatus,
+                      groundStatusColor: groundStatusColor,
+                      groundValueColor: groundValueColor,
                     ),
                     const SizedBox(height: 20),
 
                     if (mode == 2) ...[
                       Center(
                         child: ElevatedButton(
-                          onPressed: isScanning ? null : startScanMode,
+                          onPressed:
+                              isScanning
+                                  ? null
+                                  : () async {
+                                    await ScanService.startScanMode(
+                                      context: context,
+                                      onStart:
+                                          () =>
+                                              setState(() => isScanning = true),
+                                      onEnd: () async {
+                                        await controller.fetchData();
+                                        setState(() => isScanning = false);
+                                      },
+                                    );
+                                  },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.green,
                             padding: const EdgeInsets.symmetric(
@@ -492,7 +248,12 @@ class _MeasurementPageState extends State<MeasurementPage> {
                                 alignment: Alignment.center,
                                 child: ElevatedButton(
                                   onPressed: () async {
-                                    await setHardwareModeTo2();
+                                    await controller.setHardwareModeTo2();
+                                    setState(() {
+                                      context
+                                          .read<MeasurementController>()
+                                          .resetDataState();
+                                    });
                                   },
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.red,
@@ -623,7 +384,7 @@ class _MeasurementPageState extends State<MeasurementPage> {
                             shouldSetMode2: true,
                           );
                         } else {
-                          await setHardwareModeTo2();
+                          await controller.setHardwareModeTo2();
                           Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(builder: (_) => MainMenuPage()),
