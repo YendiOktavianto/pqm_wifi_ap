@@ -3,10 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:excel/excel.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../models/measurement_data.dart';
+import '../views/measurement_page.dart';
+
 class ExcelExportService {
   static Future<void> saveExcelToExternalStorage({
     required BuildContext context,
-    required List<Map<String, dynamic>> records,
+    required List<MeasurementData> records,
     required VoidCallback onReset,
   }) async {
     TextEditingController filenameController = TextEditingController();
@@ -86,13 +89,14 @@ class ExcelExportService {
                                 'Status',
                               ]);
 
-                              for (var row in records) {
+                              for (final item in records) {
+                                final map = item.toExcelMap();
                                 sheet.appendRow([
-                                  row['time'],
-                                  row['ground'],
-                                  row['voltage'],
-                                  row['frequency'],
-                                  row['status'],
+                                  map['Time'],
+                                  map['Ground'],
+                                  map['Voltage'],
+                                  map['Frequency'],
+                                  map['Status'],
                                 ]);
                               }
 
@@ -103,8 +107,15 @@ class ExcelExportService {
                                 await file.writeAsBytes(bytes);
                               }
 
-                              if (Navigator.canPop(context))
-                                Navigator.pop(context);
+                              if (Navigator.canPop(context)) {
+                                Navigator.of(context).pushAndRemoveUntil(
+                                  MaterialPageRoute(
+                                    builder:
+                                        (_) => const MeasurementPage(mode: 4),
+                                  ),
+                                  (route) => false,
+                                );
+                              }
 
                               if (context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(

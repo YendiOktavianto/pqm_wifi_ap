@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import '../models/measurement_data.dart';
 
 class MeasurementController with ChangeNotifier {
@@ -10,6 +11,8 @@ class MeasurementController with ChangeNotifier {
   bool isFetching = false;
   bool isRecording = false;
   bool isScanning = false;
+
+  List<MeasurementData> recordedData = [];
 
   // Ground status info
   String groundStatus = "";
@@ -43,12 +46,31 @@ class MeasurementController with ChangeNotifier {
         updateStatus(newData);
 
         notifyListeners();
+
+        if (isRecording) {
+          final now = DateTime.now();
+          recordedData.add(
+            MeasurementData(
+              date: DateFormat('dd-MM-yyyy').format(now),
+              day: DateFormat('EEEE').format(now),
+              time: DateFormat('HH:mm:ss').format(now),
+              ground: newData.ground,
+              voltage: newData.voltage,
+              frequency: newData.frequency,
+              mode: newData.mode,
+            ),
+          );
+        }
       }
     } catch (e) {
       print("Error fetching data: $e");
     }
 
     isFetching = false;
+  }
+
+  void setRecording(bool isOn) {
+    isRecording = isOn;
   }
 
   void updateStatus(MeasurementData newData) {

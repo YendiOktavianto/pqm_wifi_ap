@@ -12,7 +12,12 @@ import '../services/scan_services.dart';
 import '../services/save_file_service.dart';
 
 class MeasurementPage extends StatefulWidget {
-  const MeasurementPage({super.key});
+  final int mode;
+
+  const MeasurementPage({
+    super.key,
+    this.mode = 2,
+  });
 
   @override
   State<MeasurementPage> createState() => _MeasurementPageState();
@@ -45,8 +50,7 @@ class _MeasurementPageState extends State<MeasurementPage> {
     super.dispose();
   }
 
-  void _confirmStopRecording(
-    VoidCallback onConfirmed, {
+  void _confirmStopRecording(VoidCallback onConfirmed, {
     Widget? navigateToAfterStop,
     shouldSetMode2 = false,
   }) {
@@ -108,6 +112,9 @@ class _MeasurementPageState extends State<MeasurementPage> {
                         isRecording = false;
                         _recordingData.stop();
                         _recordingData.reset();
+                        controller.setRecording(false);
+                        controller.recordedData.clear();
+                        controller.setRecording(false);
                       });
                       Navigator.of(context).pop();
 
@@ -147,8 +154,12 @@ class _MeasurementPageState extends State<MeasurementPage> {
                     onPressed: () async {
                       await ExcelExportService.saveExcelToExternalStorage(
                         context: context,
-                        records: _recordingData.records,
-                        onReset: () => _recordingData.reset(),
+                        records: controller.recordedData,
+                        onReset: () {
+                          _recordingData.reset();
+                          controller.setRecording(false);
+                          controller.recordedData.clear();
+                        },
                       );
                     },
                   ),
@@ -167,11 +178,11 @@ class _MeasurementPageState extends State<MeasurementPage> {
     final data = controller.data;
     final mode = data?.mode ?? 2;
     final groundValue =
-        mode == 2 ? "--.--" : (data?.ground ?? 0.0).toStringAsFixed(1);
+    mode == 2 ? "--.--" : (data?.ground ?? 0.0).toStringAsFixed(1);
     final voltageValue =
-        mode == 2 ? "---" : (data?.voltage ?? 0.0).toStringAsFixed(0);
+    mode == 2 ? "---" : (data?.voltage ?? 0.0).toStringAsFixed(0);
     final frequencyValue =
-        mode == 2 ? "---" : (data?.frequency ?? 0.0).toStringAsFixed(0);
+    mode == 2 ? "---" : (data?.frequency ?? 0.0).toStringAsFixed(0);
     final groundStatus = controller.groundStatus;
     final groundStatusColor = controller.groundStatusColor;
     final groundValueColor = controller.groundValueColor;
@@ -207,20 +218,20 @@ class _MeasurementPageState extends State<MeasurementPage> {
                       Center(
                         child: ElevatedButton(
                           onPressed:
-                              isScanning
-                                  ? null
-                                  : () async {
-                                    await ScanService.startScanMode(
-                                      context: context,
-                                      onStart:
-                                          () =>
-                                              setState(() => isScanning = true),
-                                      onEnd: () async {
-                                        await controller.fetchData();
-                                        setState(() => isScanning = false);
-                                      },
-                                    );
-                                  },
+                          isScanning
+                              ? null
+                              : () async {
+                            await ScanService.startScanMode(
+                              context: context,
+                              onStart:
+                                  () =>
+                                  setState(() => isScanning = true),
+                              onEnd: () async {
+                                await controller.fetchData();
+                                setState(() => isScanning = false);
+                              },
+                            );
+                          },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.green,
                             padding: const EdgeInsets.symmetric(
@@ -239,126 +250,133 @@ class _MeasurementPageState extends State<MeasurementPage> {
                           ),
                         ),
                       ),
-                    ] else if (mode == 4 || mode == 5) ...[
-                      Row(
-                        children: [
-                          if (!isRecording)
+                    ] else
+                      if (mode == 4 || mode == 5) ...[
+                        Row(
+                          children: [
+                            if (!isRecording)
+                              Expanded(
+                                child: Align(
+                                  alignment: Alignment.center,
+                                  child: ElevatedButton(
+                                    onPressed: () async {
+                                      await controller.setHardwareModeTo2();
+                                      setState(() {
+                                        context
+                                            .read<MeasurementController>()
+                                            .resetDataState();
+                                      });
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.red,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 20,
+                                        vertical: 12,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(30),
+                                      ),
+                                      minimumSize: Size.zero,
+                                      tapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                    ),
+                                    child: const Text(
+                                      "RESET",
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                  ),
+                                ),
+                              ),
+
                             Expanded(
                               child: Align(
                                 alignment: Alignment.center,
-                                child: ElevatedButton(
-                                  onPressed: () async {
-                                    await controller.setHardwareModeTo2();
-                                    setState(() {
-                                      context
-                                          .read<MeasurementController>()
-                                          .resetDataState();
-                                    });
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.red,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 20,
-                                      vertical: 12,
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(30),
-                                    ),
-                                    minimumSize: Size.zero,
-                                    tapTargetSize:
-                                        MaterialTapTargetSize.shrinkWrap,
-                                  ),
-                                  child: const Text(
-                                    "RESET",
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                ),
-                              ),
-                            ),
+                                child: SizedBox(
+                                  width:
+                                  MediaQuery
+                                      .of(context)
+                                      .size
+                                      .width / 2 - 24,
 
-                          Expanded(
-                            child: Align(
-                              alignment: Alignment.center,
-                              child: SizedBox(
-                                width:
-                                    MediaQuery.of(context).size.width / 2 - 24,
-
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    ElevatedButton.icon(
-                                      onPressed: () {
-                                        if (!isRecording) {
-                                          setState(() {
-                                            isRecording = true;
-                                            _recordingData.start();
-                                          });
-                                        } else {
-                                          _confirmStopRecording(() {
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      ElevatedButton.icon(
+                                        onPressed: () {
+                                          if (!isRecording) {
                                             setState(() {
-                                              isRecording = false;
-                                              _recordingData.stop();
+                                              isRecording = true;
+                                              _recordingData.start();
+                                              controller.setRecording(true);
                                             });
-                                          }, shouldSetMode2: false);
-                                        }
-                                      },
-                                      icon: Icon(
-                                        isRecording
-                                            ? Icons.stop_circle
-                                            : Icons.fiber_manual_record,
-                                        color: Colors.white,
-                                      ),
-                                      label: Text(
-                                        isRecording
-                                            ? 'Stop Recording Data'
-                                            : 'Record Data',
-                                        style: const TextStyle(
+                                          } else {
+                                            _confirmStopRecording(() {
+                                              setState(() {
+                                                isRecording = false;
+                                                _recordingData.stop();
+                                                controller.setRecording(false);
+                                              });
+                                            }, shouldSetMode2: false);
+                                          }
+                                        },
+                                        icon: Icon(
+                                          isRecording
+                                              ? Icons.stop_circle
+                                              : Icons.fiber_manual_record,
                                           color: Colors.white,
                                         ),
-                                      ),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor:
-                                            isRecording
-                                                ? Colors.red
-                                                : Colors.green,
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 20,
-                                          vertical: 12,
-                                        ),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            30,
+                                        label: Text(
+                                          isRecording
+                                              ? 'Stop Recording Data'
+                                              : 'Record Data',
+                                          style: const TextStyle(
+                                            color: Colors.white,
                                           ),
                                         ),
-                                        minimumSize: Size.zero,
-                                        tapTargetSize:
-                                            MaterialTapTargetSize.shrinkWrap,
-                                      ),
-                                    ),
-                                    if (isRecording) const SizedBox(height: 8),
-                                    if (isRecording)
-                                      AnimatedBuilder(
-                                        animation: _recordingData,
-                                        builder: (context, _) {
-                                          return Text(
-                                            _recordingData.formattedTime,
-                                            style: const TextStyle(
-                                              fontSize: 28,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white70,
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor:
+                                          isRecording
+                                              ? Colors.red
+                                              : Colors.green,
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 20,
+                                            vertical: 12,
+                                          ),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              30,
                                             ),
-                                            textAlign: TextAlign.center,
-                                          );
-                                        },
+                                          ),
+                                          minimumSize: Size.zero,
+                                          tapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
+                                        ),
                                       ),
-                                  ],
+                                      if (isRecording) const SizedBox(
+                                          height: 8),
+                                      if (isRecording)
+                                        AnimatedBuilder(
+                                          animation: _recordingData,
+                                          builder: (context, _) {
+                                            return Text(
+                                              _recordingData.formattedTime,
+                                              style: const TextStyle(
+                                                fontSize: 28,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.white70,
+                                              ),
+                                              textAlign: TextAlign.center,
+                                            );
+                                          },
+                                        ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ],
+                          ],
+                        ),
+                      ],
                   ],
                 ),
               ),
@@ -374,7 +392,7 @@ class _MeasurementPageState extends State<MeasurementPage> {
                       actionButton(context, 'BACK TO MAIN MENU', () async {
                         if (isRecording) {
                           _confirmStopRecording(
-                            () async {
+                                () async {
                               setState(() {
                                 isRecording = false;
                                 _recordingData.stop();
@@ -404,19 +422,18 @@ class _MeasurementPageState extends State<MeasurementPage> {
     );
   }
 
-  Widget actionButton(
-    BuildContext context,
-    String text,
-    VoidCallback onPressed,
-  ) => ElevatedButton(
-    style: ElevatedButton.styleFrom(
-      backgroundColor: Colors.teal,
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-    ),
-    onPressed: onPressed,
-    child: Text(
-      text,
-      style: const TextStyle(fontSize: 16, color: Colors.white),
-    ),
-  );
+  Widget actionButton(BuildContext context,
+      String text,
+      VoidCallback onPressed,) =>
+      ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.teal,
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+        ),
+        onPressed: onPressed,
+        child: Text(
+          text,
+          style: const TextStyle(fontSize: 16, color: Colors.white),
+        ),
+      );
 }

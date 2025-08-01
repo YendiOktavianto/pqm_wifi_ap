@@ -1,11 +1,8 @@
 import 'package:flutter/foundation.dart';
-import 'package:intl/intl.dart';
 import 'dart:async';
 
 class RecordingData extends ChangeNotifier {
   bool _isRecording = false;
-  final List<Map<String, String>> _records = [];
-
   final Stopwatch _stopwatch = Stopwatch();
   late final Ticker _ticker;
 
@@ -19,18 +16,18 @@ class RecordingData extends ChangeNotifier {
     _isRecording = true;
     _stopwatch.start();
     _ticker.start();
-    _records.clear();
+    notifyListeners();
   }
 
   void stop() {
     _isRecording = false;
     _stopwatch.stop();
     _ticker.stop();
+    notifyListeners();
   }
 
   void reset() {
     _stopwatch.reset();
-    _records.clear();
     notifyListeners();
   }
 
@@ -42,40 +39,6 @@ class RecordingData extends ChangeNotifier {
         '${elapsed.inMinutes.remainder(60).toString().padLeft(2, '0')}:'
         '${elapsed.inSeconds.remainder(60).toString().padLeft(2, '0')}';
   }
-
-  void addRecord({
-    required double ground,
-    required int voltage,
-    required int frequency,
-    required bool groundConnected,
-  }) {
-    if (!_isRecording) return;
-
-    final now = DateTime.now();
-    final formattedDate = DateFormat(
-      "d MMMM yyyy HH:mm:ss",
-      'id_ID',
-    ).format(now);
-
-    String status;
-    if (ground <= 1.0 && groundConnected) {
-      status = "Pass - Ground Connected";
-    } else if (ground > 1.0 && groundConnected) {
-      status = "Fail - Ground Connected";
-    } else {
-      status = "Fail - Ground Not Connected";
-    }
-
-    _records.add({
-      'time': formattedDate,
-      'ground': '${ground.toStringAsFixed(1)} Volt',
-      'voltage': '$voltage Volt',
-      'frequency': '$frequency Hz',
-      'status': status,
-    });
-  }
-
-  List<Map<String, String>> get records => List.unmodifiable(_records);
 }
 
 class Ticker {
