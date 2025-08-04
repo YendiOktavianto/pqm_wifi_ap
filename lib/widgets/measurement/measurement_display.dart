@@ -1,22 +1,10 @@
 import 'package:flutter/material.dart';
+import '../../controller/measurement_controller.dart';
 
 class MeasurementDisplay extends StatelessWidget {
-  final String? groundValue;
-  final Color groundValueColor;
-  final String groundStatus;
-  final Color groundStatusColor;
-  final String? voltageValue;
-  final String? frequencyValue;
+  final MeasurementController controller;
 
-  const MeasurementDisplay({
-    super.key,
-    this.groundValue,
-    required this.groundValueColor,
-    required this.groundStatus,
-    required this.groundStatusColor,
-    this.voltageValue,
-    this.frequencyValue,
-  });
+  const MeasurementDisplay({super.key, required this.controller});
 
   @override
   Widget build(BuildContext context) {
@@ -39,18 +27,18 @@ class MeasurementDisplay extends StatelessWidget {
                       'Ground Measurement (V)',
                       style: TextStyle(color: Colors.white),
                     ),
-                    groundStatus.isNotEmpty
+                    controller.groundStatus.isNotEmpty
                         ? Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 8,
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: groundStatusColor,
+                            color: controller.groundStatusColor,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
-                            groundStatus,
+                            controller.groundStatus,
                             style: const TextStyle(color: Colors.white),
                           ),
                         )
@@ -61,10 +49,11 @@ class MeasurementDisplay extends StatelessWidget {
                 // Value
                 Center(
                   child: Text(
-                    groundValue ?? '',
+                    controller.groundDisplay,
                     style: TextStyle(
-                      color: groundValueColor,
-                      fontSize: (groundValue?.length ?? 0) > 10 ? 27 : 48,
+                      color: controller.groundValueColor,
+                      fontSize:
+                          (controller.groundDisplay.length ?? 0) > 10 ? 27 : 48,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -81,14 +70,14 @@ class MeasurementDisplay extends StatelessWidget {
             Expanded(
               child: _smallMeasurementCard(
                 label: 'Voltage (V)',
-                value: voltageValue,
+                value: controller.voltageDisplay,
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: _smallMeasurementCard(
                 label: 'Frequency (Hz)',
-                value: frequencyValue,
+                value: controller.voltageDisplay,
               ),
             ),
           ],

@@ -14,10 +14,44 @@ class MeasurementController with ChangeNotifier {
 
   List<MeasurementData> recordedData = [];
 
-  // Ground status info
-  String groundStatus = "";
-  Color groundStatusColor = Colors.red;
-  Color groundValueColor = Colors.white;
+  double get ground => data?.ground ?? 0.0;
+
+  double get voltage => data?.voltage ?? 0.0;
+
+  double get frequency => data?.frequency ?? 0.0;
+
+  int get mode => data?.mode ?? 0;
+
+  bool get isGroundDisconnected => mode == 5;
+
+  String get groundDisplay =>
+      isGroundDisconnected ? "Ground Not Connected" : ground.toStringAsFixed(1);
+
+  Color get groundValueColor {
+    if (mode == 5) return Colors.red;
+    if (mode == 2) return Colors.white;
+    return ground >= 1.0 ? Colors.red : Colors.green;
+  }
+
+  String get voltageDisplay =>
+      isGroundDisconnected ? "---" : voltage.toStringAsFixed(0);
+
+  String get frequencyDisplay =>
+      isGroundDisconnected ? "---" : frequency.toStringAsFixed(0);
+
+  String get groundStatus {
+    if (mode == 4) {
+      return ground >= 1.0 ? "FAIL" : "PASS";
+    }
+    return "";
+  }
+
+  Color get groundStatusColor {
+    if (mode == 4) {
+      return ground >= 1.0 ? Colors.red : Colors.green;
+    }
+    return Colors.transparent;
+  }
 
   Timer? _timer;
 
@@ -43,7 +77,6 @@ class MeasurementController with ChangeNotifier {
         final newData = MeasurementData.fromJson(decoded);
 
         data = newData;
-        updateStatus(newData);
 
         notifyListeners();
 
@@ -73,33 +106,8 @@ class MeasurementController with ChangeNotifier {
     isRecording = isOn;
   }
 
-  void updateStatus(MeasurementData newData) {
-    if (newData.mode == 2) {
-      groundStatus = "";
-      groundStatusColor = Colors.transparent;
-      groundValueColor = Colors.white;
-    } else if (newData.mode == 5) {
-      groundStatus = "Fail";
-      groundStatusColor = Colors.red;
-      groundValueColor = Colors.white;
-    } else {
-      if (newData.ground > 1.0) {
-        groundStatus = "Fail";
-        groundStatusColor = Colors.red;
-        groundValueColor = Colors.red;
-      } else {
-        groundStatus = "Pass";
-        groundStatusColor = Colors.green;
-        groundValueColor = Colors.green;
-      }
-    }
-  }
-
   void resetDataState() {
     data = null;
-    groundStatus = "";
-    groundStatusColor = Colors.transparent;
-    groundValueColor = Colors.white;
   }
 
   Future<void> setHardwareModeTo2() async {

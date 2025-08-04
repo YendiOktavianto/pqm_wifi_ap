@@ -28,7 +28,7 @@ class MainMenuPage extends StatelessWidget {
             MenuButton(
               title: "Voltage & Ground Measurement",
               iconPath: "assets/images/Voltage_Ground_Measurement_Logo.png",
-              page: const MeasurementPage(),
+              page: const MeasurementPage(mode: 2),
               transitionOffset: const Offset(1.0, 0.0), // Slide dari kanan
             ),
             MenuButton(
