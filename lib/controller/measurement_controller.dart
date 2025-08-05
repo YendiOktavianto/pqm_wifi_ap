@@ -8,6 +8,8 @@ import '../models/measurement_data.dart';
 class MeasurementController with ChangeNotifier {
   MeasurementData? data;
 
+  int _mode = 2;
+
   bool isFetching = false;
   bool isRecording = false;
   bool isScanning = false;
@@ -20,12 +22,35 @@ class MeasurementController with ChangeNotifier {
 
   double get frequency => data?.frequency ?? 0.0;
 
-  int get mode => data?.mode ?? 0;
+  int get mode => _mode;
 
   bool get isGroundDisconnected => mode == 5;
 
-  String get groundDisplay =>
-      isGroundDisconnected ? "Ground Not Connected" : ground.toStringAsFixed(1);
+  void setMode(int newMode) {
+    _mode = newMode;
+    notifyListeners();
+  }
+
+  void setScanning(bool value) {
+    isScanning = value;
+    notifyListeners();
+  }
+
+  void setRecording(bool isOn) {
+    isRecording = isOn;
+    notifyListeners();
+  }
+
+  void setFetching(bool value) {
+    isFetching = value;
+    notifyListeners();
+  }
+
+  String get groundDisplay {
+    if (mode == 5) return "Ground Not Connected";
+    if (mode == 2) return "--.--";
+    return ground.toStringAsFixed(1);
+  }
 
   Color get groundValueColor {
     if (mode == 5) return Colors.red;
@@ -34,10 +59,10 @@ class MeasurementController with ChangeNotifier {
   }
 
   String get voltageDisplay =>
-      isGroundDisconnected ? "---" : voltage.toStringAsFixed(0);
+      (mode == 2 || mode == 5) ? "---" : voltage.toStringAsFixed(0);
 
   String get frequencyDisplay =>
-      isGroundDisconnected ? "---" : frequency.toStringAsFixed(0);
+      (mode == 2 || mode == 5) ? "---" : frequency.toStringAsFixed(0);
 
   String get groundStatus {
     if (mode == 4) {
@@ -78,6 +103,8 @@ class MeasurementController with ChangeNotifier {
 
         data = newData;
 
+        setMode(newData.mode);
+
         notifyListeners();
 
         if (isRecording) {
@@ -100,14 +127,6 @@ class MeasurementController with ChangeNotifier {
     }
 
     isFetching = false;
-  }
-
-  void setRecording(bool isOn) {
-    isRecording = isOn;
-  }
-
-  void resetDataState() {
-    data = null;
   }
 
   Future<void> setHardwareModeTo2() async {

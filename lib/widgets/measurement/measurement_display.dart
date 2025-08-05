@@ -77,7 +77,7 @@ class MeasurementDisplay extends StatelessWidget {
             Expanded(
               child: _smallMeasurementCard(
                 label: 'Frequency (Hz)',
-                value: controller.voltageDisplay,
+                value: controller.frequencyDisplay,
               ),
             ),
           ],

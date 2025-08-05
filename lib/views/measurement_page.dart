@@ -12,9 +12,7 @@ import '../services/scan_services.dart';
 import '../services/save_file_service.dart';
 
 class MeasurementPage extends StatefulWidget {
-  final int mode;
-
-  const MeasurementPage({super.key, this.mode = 2});
+  const MeasurementPage({super.key});
 
   @override
   State<MeasurementPage> createState() => _MeasurementPageState();
@@ -22,8 +20,6 @@ class MeasurementPage extends StatefulWidget {
 
 class _MeasurementPageState extends State<MeasurementPage> {
   final RecordingData _recordingData = RecordingData();
-  bool isScanning = false;
-  bool isRecording = false;
   late MeasurementController controller;
 
   @override
@@ -107,10 +103,8 @@ class _MeasurementPageState extends State<MeasurementPage> {
                     child: const Text('Only Stop'),
                     onPressed: () async {
                       setState(() {
-                        isRecording = false;
                         _recordingData.stop();
                         _recordingData.reset();
-                        controller.setRecording(false);
                         controller.recordedData.clear();
                         controller.setRecording(false);
                       });
@@ -199,17 +193,22 @@ class _MeasurementPageState extends State<MeasurementPage> {
                       Center(
                         child: ElevatedButton(
                           onPressed:
-                              isScanning
+                              controller.isScanning
                                   ? null
                                   : () async {
                                     await ScanService.startScanMode(
                                       context: context,
-                                      onStart:
-                                          () =>
-                                              setState(() => isScanning = true),
+                                      onStart: () {
+                                        controller.setMode(4);
+                                        setState(
+                                          () => controller.setScanning(true),
+                                        );
+                                      },
                                       onEnd: () async {
                                         await controller.fetchData();
-                                        setState(() => isScanning = false);
+                                        setState(
+                                          () => controller.setScanning(false),
+                                        );
                                       },
                                     );
                                   },
@@ -234,18 +233,14 @@ class _MeasurementPageState extends State<MeasurementPage> {
                     ] else if (mode == 4 || mode == 5) ...[
                       Row(
                         children: [
-                          if (!isRecording)
+                          if (!controller.isRecording)
                             Expanded(
                               child: Align(
                                 alignment: Alignment.center,
                                 child: ElevatedButton(
                                   onPressed: () async {
                                     await controller.setHardwareModeTo2();
-                                    setState(() {
-                                      context
-                                          .read<MeasurementController>()
-                                          .resetDataState();
-                                    });
+                                    controller.setMode(2);
                                   },
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.red,
@@ -280,16 +275,14 @@ class _MeasurementPageState extends State<MeasurementPage> {
                                   children: [
                                     ElevatedButton.icon(
                                       onPressed: () {
-                                        if (!isRecording) {
+                                        if (!controller.isRecording) {
                                           setState(() {
-                                            isRecording = true;
                                             _recordingData.start();
                                             controller.setRecording(true);
                                           });
                                         } else {
                                           _confirmStopRecording(() {
                                             setState(() {
-                                              isRecording = false;
                                               _recordingData.stop();
                                               controller.setRecording(false);
                                             });
@@ -297,13 +290,13 @@ class _MeasurementPageState extends State<MeasurementPage> {
                                         }
                                       },
                                       icon: Icon(
-                                        isRecording
+                                        controller.isRecording
                                             ? Icons.stop_circle
                                             : Icons.fiber_manual_record,
                                         color: Colors.white,
                                       ),
                                       label: Text(
-                                        isRecording
+                                        controller.isRecording
                                             ? 'Stop Recording Data'
                                             : 'Record Data',
                                         style: const TextStyle(
@@ -312,7 +305,7 @@ class _MeasurementPageState extends State<MeasurementPage> {
                                       ),
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor:
-                                            isRecording
+                                            controller.isRecording
                                                 ? Colors.red
                                                 : Colors.green,
                                         padding: const EdgeInsets.symmetric(
@@ -329,8 +322,9 @@ class _MeasurementPageState extends State<MeasurementPage> {
                                             MaterialTapTargetSize.shrinkWrap,
                                       ),
                                     ),
-                                    if (isRecording) const SizedBox(height: 8),
-                                    if (isRecording)
+                                    if (controller.isRecording)
+                                      const SizedBox(height: 8),
+                                    if (controller.isRecording)
                                       AnimatedBuilder(
                                         animation: _recordingData,
                                         builder: (context, _) {
@@ -366,12 +360,12 @@ class _MeasurementPageState extends State<MeasurementPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       actionButton(context, 'BACK TO MAIN MENU', () async {
-                        if (isRecording) {
+                        if (controller.isRecording) {
                           _confirmStopRecording(
                             () async {
                               setState(() {
-                                isRecording = false;
                                 _recordingData.stop();
+                                controller.setRecording(false);
                               });
                             },
                             navigateToAfterStop: const MainMenuPage(),

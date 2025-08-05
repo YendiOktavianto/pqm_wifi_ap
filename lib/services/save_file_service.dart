@@ -111,7 +111,7 @@ class ExcelExportService {
                                 Navigator.of(context).pushAndRemoveUntil(
                                   MaterialPageRoute(
                                     builder:
-                                        (_) => const MeasurementPage(mode: 4),
+                                        (_) => const MeasurementPage(),
                                   ),
                                   (route) => false,
                                 );
