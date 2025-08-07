@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../controller/measurement_controller.dart';
+import '../widgets/dialog/open_file_dialog.dart';
 import '../widgets/measurement/date_time_display.dart';
 import '../widgets/exit_app_button.dart';
 import '../widgets/menu/menu_button.dart';
@@ -7,6 +8,7 @@ import '../widgets/menu/action_button.dart';
 import '../services/open_file_service.dart';
 import '../core/animations/slide_route.dart';
 import 'package:provider/provider.dart';
+import 'measurement_log_page.dart';
 import 'measurement_page.dart';
 import 'second_welcome_page.dart';
 
@@ -44,18 +46,33 @@ class MainMenuPage extends StatelessWidget {
             MenuButton(
               title: "Open File",
               iconPath: "assets/images/Open_File_Logo.png",
-              onTap: () async {
-                try {
-                  await OpenFileService.openFileManager();
-                } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Gagal membuka file manager: $e')),
-                  );
-                }
+              onTap: () {
+                showOpenFileDialog(
+                  context: context,
+                  onOpenFileManager: () async {
+                    try {
+                      await OpenFileService.openFileManager();
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text("Failed to open file manager: $e"),
+                        ),
+                      );
+                    }
+                  },
+                  onViewTable: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const MeasurementLogPage(),
+                      ),
+                    );
+                  },
+                );
               },
             ),
             MenuButton(
-              title: "Rename File (Under Development)",
+              title: "Rename File",
               iconPath: "assets/images/Rename_File_Logo.png",
               onTap: () {},
             ),
