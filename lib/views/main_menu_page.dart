@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pqm_app/views/rename_file_page.dart';
 import '../controller/measurement_controller.dart';
 import '../widgets/dialog/open_file_dialog.dart';
 import '../widgets/measurement/date_time_display.dart';
@@ -74,7 +75,12 @@ class MainMenuPage extends StatelessWidget {
             MenuButton(
               title: "Rename File",
               iconPath: "assets/images/Rename_File_Logo.png",
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const RenameFilePage()),
+                );
+              },
             ),
 
             const SizedBox(height: 20),

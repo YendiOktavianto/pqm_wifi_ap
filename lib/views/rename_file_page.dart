@@ -1,126 +1,104 @@
 import 'package:flutter/material.dart';
-import 'package:pqm_app/views/main_menu_page.dart';
-import '../widgets/measurement/date_time_display.dart';
-import '../widgets/measurement/device_info_column.dart';
-import '../widgets/exit_app_button.dart';
+import 'package:provider/provider.dart';
+import '../controller/rename_file_controller.dart';
+import '../widgets/rename_file_dropdown.dart';
 
-class RenameFilePage extends StatelessWidget {
+class RenameFilePage extends StatefulWidget {
   const RenameFilePage({super.key});
 
   @override
+  State<RenameFilePage> createState() => _RenameFilePageState();
+}
+
+class _RenameFilePageState extends State<RenameFilePage> {
+  String? _selectedFile;
+  final TextEditingController _newNameController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(
+      () =>
+          Provider.of<RenameFileController>(context, listen: false).loadFiles(),
+    );
+  }
+
+  void _renameFile(BuildContext context) async {
+    final controller = Provider.of<RenameFileController>(
+      context,
+      listen: false,
+    );
+    final newName = _newNameController.text.trim();
+
+    if (_selectedFile == null || newName.isEmpty) return;
+
+    final result = await controller.renameFile(_selectedFile!, newName);
+
+    if (!mounted) return;
+    if (result) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('File berhasil di-rename')));
+      _newNameController.clear();
+      setState(() => _selectedFile = null);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Gagal mengganti nama file')),
+      );
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [DateTimeDisplay(), DeviceInfoColumn()],
-              ),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return ChangeNotifierProvider(
+      create: (_) => RenameFileController(),
+      child: Consumer<RenameFileController>(
+        builder: (context, controller, _) {
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text('Rename File'),
+              backgroundColor: Colors.black,
+            ),
+            backgroundColor: Colors.black,
+            body: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
                 children: [
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.grey,
-                      foregroundColor: Colors.white,
-                      shape: StadiumBorder(),
-                    ),
-                    onPressed: () {},
-                    child: const Text("Rename File"),
-                  ),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.teal,
-                      foregroundColor: Colors.white,
-                      shape: StadiumBorder(),
-                    ),
-                    onPressed: () {},
-                    child: const Text("Disconnect"),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 30),
-              const Text('Old Filename', style: TextStyle(color: Colors.white)),
-              const SizedBox(height: 10),
-              TextField(
-                decoration: InputDecoration(
-                  hintText: 'Search file',
-                  hintStyle: const TextStyle(color: Colors.grey),
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              const Text('New Filename', style: TextStyle(color: Colors.white)),
-              const SizedBox(height: 10),
-              TextField(
-                decoration: InputDecoration(
-                  hintText: 'Enter new filename here',
-                  hintStyle: const TextStyle(color: Colors.grey),
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                ),
-              ),
-              const Spacer(),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.teal,
-                    ),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const MainMenuPage(),
-                        ),
-                      );
+                  RenameFileDropdown(
+                    files: controller.fileList,
+                    selectedFile: _selectedFile,
+                    onChanged: (val) {
+                      setState(() {
+                        _selectedFile = val;
+                      });
                     },
-                    child: const Text(
-                      'BACK',
-                      style: TextStyle(color: Colors.white),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: _newNameController,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: const InputDecoration(
+                      labelText: "Nama file baru",
+                      labelStyle: TextStyle(color: Colors.white54),
+                      border: OutlineInputBorder(),
                     ),
                   ),
+                  const SizedBox(height: 16),
                   ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.teal,
-                    ),
-                    onPressed: () {},
-                    child: const Text(
-                      'CANCEL',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.teal,
-                    ),
-                    onPressed: () {},
-                    child: const Text(
-                      'SAVE',
-                      style: TextStyle(color: Colors.white),
-                    ),
+                    onPressed:
+                        controller.isLoading
+                            ? null
+                            : () => _renameFile(context),
+                    child:
+                        controller.isLoading
+                            ? const CircularProgressIndicator()
+                            : const Text('Rename'),
                   ),
                 ],
               ),
-              const SizedBox(height: 30),
-              Center(child: const ExitAppButton()),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
