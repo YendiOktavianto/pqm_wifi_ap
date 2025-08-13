@@ -64,8 +64,9 @@ class MainMenuPage extends StatelessWidget {
                   onViewTable: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => const MeasurementLogPage(),
+                      createSlideRoute(
+                        const MeasurementLogPage(),
+                        beginOffset: const Offset(1.0, 0.0),
                       ),
                     );
                   },

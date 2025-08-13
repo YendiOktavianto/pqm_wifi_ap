@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../core/animations/slide_route.dart';
 import 'main_menu_page.dart';
 import '../widgets/measurement/date_time_display.dart';
 import '../widgets/measurement/device_info_column.dart';
@@ -375,7 +376,10 @@ class _MeasurementPageState extends State<MeasurementPage> {
                           await controller.setHardwareModeTo2();
                           Navigator.pushReplacement(
                             context,
-                            MaterialPageRoute(builder: (_) => MainMenuPage()),
+                            createSlideRoute(
+                              const MainMenuPage(),
+                              beginOffset: const Offset(-1.0, 0.0),
+                            ),
                           );
                         }
                       }),

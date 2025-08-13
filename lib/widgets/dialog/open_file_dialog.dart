@@ -33,7 +33,13 @@ void showOpenFileDialog({
                 const SizedBox(height: 20),
                 ElevatedButton.icon(
                   icon: const Icon(Icons.folder_open),
-                  label: const Text("Open via File Manager"),
+                  label: const Text(
+                    "Open via File Manager",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700, // bold
+                    ),
+                  ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blueAccent,
                     padding: const EdgeInsets.symmetric(
@@ -49,7 +55,13 @@ void showOpenFileDialog({
                 const SizedBox(height: 10),
                 ElevatedButton.icon(
                   icon: const Icon(Icons.table_chart),
-                  label: const Text("View in Table Format"),
+                  label: const Text(
+                    "View in Table Format",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700, // bold
+                    ),
+                  ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
                     padding: const EdgeInsets.symmetric(
@@ -63,12 +75,25 @@ void showOpenFileDialog({
                   },
                 ),
                 const SizedBox(height: 10),
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text(
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.close),
+                  label: const Text(
                     "Cancel",
-                    style: TextStyle(color: Colors.white70),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700, // bold
+                    ),
                   ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
                 ),
               ],
             ),
