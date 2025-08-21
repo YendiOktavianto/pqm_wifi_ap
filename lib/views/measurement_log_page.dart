@@ -1,7 +1,10 @@
-// lib/views/measurement_log_page.dart
-
 import 'package:flutter/material.dart';
 import '../controller/measurement_log_controller.dart';
+
+import '../widgets/measurement_logs/measurement_logs_header.dart';
+import '../widgets/measurement_logs/measurement_logs_dropdown.dart';
+import '../widgets/measurement_logs/measurement_logs_empty_card.dart';
+import '../widgets/measurement_logs/measurement_logs_table.dart';
 
 class MeasurementLogPage extends StatefulWidget {
   const MeasurementLogPage({super.key});
@@ -12,6 +15,9 @@ class MeasurementLogPage extends StatefulWidget {
 
 class _MeasurementLogPageState extends State<MeasurementLogPage> {
   final controller = MeasurementLogController();
+  bool _isDropdownOpen = false;
+
+  void _toggleDropdown() => setState(() => _isDropdownOpen = !_isDropdownOpen);
 
   @override
   void initState() {
@@ -21,124 +27,103 @@ class _MeasurementLogPageState extends State<MeasurementLogPage> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final scale = (size.width / 800).clamp(0.7, 1.4);
+
+    final hasSelection =
+        (controller.selectedFile != null &&
+            controller.selectedFile!.isNotEmpty);
+
+    const headers = <String>[
+      'DATE/TIME',
+      'GROUND',
+      'VOLTAGE',
+      'FREQUENCY',
+      'STATUS',
+    ];
+    final rows = controller.tableData; // List<List<String>>
+
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        title: const Text(
-          "Measurement Logs",
-          style: TextStyle(color: Colors.white),
-        ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      body: SafeArea(
+        child: Stack(
           children: [
-            const Text("Select File:", style: TextStyle(color: Colors.white70)),
-            const SizedBox(height: 8),
-            DropdownButton<String>(
-              value: controller.selectedFile,
-              isExpanded: true,
-              hint: const Text(
-                "Choose a log file",
-                style: TextStyle(color: Colors.white54),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                MeasurementLogsHeader(
+                  onBack: () => Navigator.of(context).maybePop(),
+                ),
+
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 24 * scale),
+                  child: Text(
+                    'Select File',
+                    style: TextStyle(
+                      color: const Color(0xFFBDBDBD),
+                      fontSize: (14 * scale),
+                      fontWeight: FontWeight.w400,
+                      fontFamily: 'Roboto',
+                    ),
+                  ),
+                ),
+                SizedBox(height: 8 * scale),
+
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 24 * scale),
+                  child: GestureDetector(
+                    onTap: _toggleDropdown,
+                    child: MeasurementLogsDropdownClosed(
+                      scale: scale,
+
+                      isLoading: false,
+                      errorText: null,
+                      selectedLabel:
+                          (controller.selectedFile?.isNotEmpty ?? false)
+                              ? controller.selectedFile
+                              : 'Choose a log file',
+                    ),
+                  ),
+                ),
+
+                SizedBox(height: 18 * scale),
+
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 24 * scale),
+                    child:
+                        hasSelection
+                            ? MeasurementLogsTable(
+                              scale: scale,
+                              headers: headers,
+                              rows: rows,
+                            )
+                            : MeasurementLogsEmptyCard(
+                              scale: scale,
+                              onChoose: _toggleDropdown,
+                            ),
+                  ),
+                ),
+              ],
+            ),
+
+            if (_isDropdownOpen)
+              Positioned.fill(
+                child: MeasurementLogsDropdownOverlay(
+                  scale: scale,
+                  title: 'Choose Log',
+                  files: controller.availableFiles,
+                  onClose: _toggleDropdown,
+                  onSelect: (name) async {
+                    await controller.loadSelectedFile(name);
+                    if (mounted) {
+                      setState(() {
+                        _isDropdownOpen = false;
+                      });
+                    }
+                  },
+                ),
               ),
-              dropdownColor: Colors.grey[900],
-              items:
-                  controller.availableFiles.map((file) {
-                    return DropdownMenuItem(
-                      value: file,
-                      child: Text(
-                        file,
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    );
-                  }).toList(),
-              onChanged: (value) async {
-                if (value != null) {
-                  await controller.loadSelectedFile(value);
-                  setState(() {});
-                }
-              },
-            ),
-            const SizedBox(height: 20),
-            Expanded(
-              child:
-                  controller.tableData.isEmpty
-                      ? const Center(
-                        child: Text(
-                          "No data loaded",
-                          style: TextStyle(color: Colors.white70),
-                        ),
-                      )
-                      : SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: DataTable(
-                          headingRowColor: WidgetStateProperty.all(
-                            Colors.grey[800],
-                          ),
-                          dataRowColor: WidgetStateProperty.all(
-                            Colors.grey[900],
-                          ),
-                          columns: const [
-                            DataColumn(
-                              label: Text(
-                                "DATE TIME",
-                                style: TextStyle(color: Colors.white),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                "GROUND",
-                                style: TextStyle(color: Colors.white),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                "VOLTAGE",
-                                style: TextStyle(color: Colors.white),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                "FREQUENCY",
-                                style: TextStyle(color: Colors.white),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                "STATUS",
-                                style: TextStyle(color: Colors.white),
-                              ),
-                            ),
-                          ],
-                          rows:
-                              controller.tableData.map((row) {
-                                final status = row.length > 4 ? row[4] : '';
-                                return DataRow(
-                                  cells:
-                                      row.asMap().entries.map((entry) {
-                                        final i = entry.key;
-                                        final cell = entry.value;
-                                        final color =
-                                            (i == 4 && status == "FAIL")
-                                                ? Colors.red
-                                                : (i == 4 && status == "PASS")
-                                                ? Colors.green
-                                                : Colors.white;
-                                        return DataCell(
-                                          Text(
-                                            cell,
-                                            style: TextStyle(color: color),
-                                          ),
-                                        );
-                                      }).toList(),
-                                );
-                              }).toList(),
-                        ),
-                      ),
-            ),
           ],
         ),
       ),
